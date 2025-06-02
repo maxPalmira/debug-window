@@ -1,0 +1,44 @@
+{
+  "name": "debug-window",
+  "version": "1.0.0",
+  "description": "A draggable, resizable debug panel for web applications with localStorage state persistence",
+  "main": "debug-window.js",
+  "files": [
+    "debug-window.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "debug",
+    "window",
+    "panel",
+    "draggable",
+    "resizable",
+    "ui",
+    "web",
+    "javascript",
+    "localstorage",
+    "developer-tools"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/debug-window.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/debug-window/issues"
+  },
+  "homepage": "https://github.com/yourusername/debug-window#readme",
+  "dependencies": {},
+  "peerDependencies": {
+    "moveable": "^0.30.0"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "browser": "debug-window.js"
+} 
