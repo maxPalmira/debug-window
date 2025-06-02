@@ -446,6 +446,7 @@
             dragIcon.title = 'Drag to move';
             
             const title = document.createElement('span');
+            title.className = 'title-text';
             title.textContent = this.options.title;
             
             titleContainer.appendChild(dragIcon);
@@ -914,7 +915,7 @@
         
         setTitle(title) {
             this.options.title = title;
-            const titleElement = this.header.querySelector('.debug-title span');
+            const titleElement = this.header.querySelector('.title-text');
             if (titleElement) {
                 titleElement.textContent = title;
             }
