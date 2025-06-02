@@ -1,7 +1,7 @@
 /*!
  * DebugWindow - A draggable, resizable debug panel for web applications
- * Version: 1.0.0
- * Created: Single file standalone library with embedded CSS
+ * Version: 1.0.1
+ * Updated: More compact styling with smaller fonts and reduced padding
  * Features: Draggable by icon, resizable, localStorage state persistence, multiple UI elements
  * Dependencies: Moveable.js (must be loaded separately)
  * Usage: const debugWindow = new DebugWindow(options).init();
@@ -19,7 +19,7 @@
         const style = document.createElement('style');
         style.id = 'debug-window-styles';
         style.textContent = `
-/* DebugWindow Embedded Styles */
+/* DebugWindow Embedded Styles - Compact Version */
 .debug-window {
     position: absolute;
     background: #2d2d2d;
@@ -38,7 +38,7 @@
 
 .debug-header {
     background: #404040;
-    padding: 8px 12px;
+    padding: 6px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -47,7 +47,7 @@
 }
 
 .debug-title {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     color: #ffffff;
     display: flex;
@@ -58,7 +58,7 @@
 .drag-icon {
     cursor: move;
     color: #cccccc;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     padding: 4px 6px;
     border-radius: 4px;
@@ -82,7 +82,7 @@
     background: transparent;
     border: none;
     color: #cccccc;
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
     padding: 6px 8px;
     border-radius: 3px;
@@ -97,14 +97,14 @@
 
 .debug-content {
     flex: 1;
-    padding: 12px;
+    padding: 8px;
     overflow-y: auto;
     max-height: calc(100% - 40px);
 }
 
 /* Sections */
 .debug-section {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .debug-section:last-child {
@@ -112,13 +112,13 @@
 }
 
 .section-title {
-    font-size: 12px;
+    font-size: 10px;
     color: #aaaaaa;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-bottom: 1px solid #444;
-    padding-bottom: 4px;
+    padding-bottom: 3px;
 }
 
 /* Logs */
@@ -132,7 +132,7 @@
 }
 
 .log-item {
-    font-size: 11px;
+    font-size: 9px;
     font-family: 'Courier New', monospace;
     margin-bottom: 4px;
     padding: 2px 4px;
@@ -176,7 +176,7 @@
     border: none;
     padding: 4px 8px;
     border-radius: 3px;
-    font-size: 10px;
+    font-size: 8px;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -190,13 +190,13 @@
     background: #404040;
     color: #ffffff;
     border: 1px solid #555;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 10px;
     transition: all 0.2s;
     width: 100%;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .config-button:hover {
@@ -217,8 +217,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px;
-    margin-bottom: 4px;
+    padding: 4px;
+    margin-bottom: 3px;
     border-radius: 4px;
     cursor: pointer;
     transition: background 0.2s;
@@ -257,7 +257,7 @@
 }
 
 .checkbox-label {
-    font-size: 12px;
+    font-size: 10px;
     color: #cccccc;
     cursor: pointer;
     flex: 1;
@@ -265,15 +265,15 @@
 
 /* Radio Groups */
 .radio-group {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .radio-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px;
-    margin-bottom: 4px;
+    padding: 4px;
+    margin-bottom: 3px;
     border-radius: 4px;
     cursor: pointer;
     transition: background 0.2s;
@@ -312,7 +312,7 @@
 }
 
 .radio-label {
-    font-size: 12px;
+    font-size: 10px;
     color: #cccccc;
     cursor: pointer;
     flex: 1;
@@ -323,11 +323,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 8px;
+    padding: 4px 6px;
     background: #3a3a3a;
     border-radius: 4px;
-    margin-bottom: 4px;
-    font-size: 12px;
+    margin-bottom: 3px;
+    font-size: 10px;
 }
 
 .metric-item:last-child {
@@ -399,7 +399,7 @@
     class DebugWindow {
         constructor(options = {}) {
             this.options = {
-                title: options.title || 'Debug Window',
+                title: options.title || 'Debug Info',
                 position: options.position || { x: 100, y: 100 },
                 size: options.size || { width: 300, height: 400 },
                 visible: options.visible !== false,
