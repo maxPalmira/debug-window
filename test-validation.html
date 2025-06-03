@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Feature Validation - Debug Window</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            margin: 20px;
+        }
+        .test-section {
+            background: #2d2d2d;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #005a9a;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .test-success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
+        }
+        .test-error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
+        }
+        .test-info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid #2196F3;
+            color: #2196F3;
+        }
+        #console-output {
+            background: #000;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Comprehensive Feature Validation</h1>
+    
+    <div class="test-section">
+        <h2>1. Basic Window Functions</h2>
+        <button class="test-button" onclick="testBasicCreation()">Test Window Creation</button>
+        <button class="test-button" onclick="testVisibilityToggle()">Test Show/Hide</button>
+        <button class="test-button" onclick="testDestruction()">Test Destruction</button>
+        <div id="basic-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Collapse Functionality</h2>
+        <button class="test-button" onclick="testCollapseToggle()">Test Collapse Toggle</button>
+        <button class="test-button" onclick="testCollapsePersistence()">Test Collapse Persistence</button>
+        <button class="test-button" onclick="testCollapseButton()">Test Minimize Button</button>
+        <div id="collapse-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Text Input Functionality</h2>
+        <button class="test-button" onclick="testTextInputCreation()">Test Input Creation</button>
+        <button class="test-button" onclick="testTextInputEvents()">Test Input Events</button>
+        <button class="test-button" onclick="testTextInputValues()">Test Input Values</button>
+        <div id="input-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. State Management</h2>
+        <button class="test-button" onclick="testStateSaving()">Test State Saving</button>
+        <button class="test-button" onclick="testStateLoading()">Test State Loading</button>
+        <button class="test-button" onclick="testStateClearing()">Test State Clearing</button>
+        <div id="state-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Integration Test</h2>
+        <button class="test-button" onclick="runFullIntegrationTest()">Run Full Integration Test</button>
+        <div id="integration-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="console-output"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/moveable@0.53.0/dist/moveable.min.js"></script>
+    <script src="debug-window.js"></script>
+    
+    <script>
+        let debugWindow = null;
+        let testResults = [];
+        
+        // Console capture
+        const originalConsole = { ...console };
+        const consoleOutput = document.getElementById('console-output');
+        
+        function logToConsole(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            
+            consoleOutput.innerHTML += `<div>[${timestamp}] ${type.toUpperCase()}: ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            
+            originalConsole[type](...args);
+        }
+        
+        console.log = (...args) => logToConsole('log', ...args);
+        console.error = (...args) => logToConsole('error', ...args);
+        console.warn = (...args) => logToConsole('warn', ...args);
+        
+        function addResult(containerId, type, message) {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result test-${type}`;
+            resultDiv.textContent = message;
+            container.appendChild(resultDiv);
+            
+            testResults.push({ type, message, timestamp: Date.now() });
+        }
+        
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+        
+        // Test 1: Basic Window Functions
+        function testBasicCreation() {
+            clearResults('basic-results');
+            try {
+                if (debugWindow) debugWindow.destroy();
+                
+                debugWindow = new DebugWindow({
+                    title: 'Test Window',
+                    position: { x: 100, y: 100 },
+                    size: { width: 300, height: 400 }
+                });
+                
+                debugWindow.init();
+                
+                if (debugWindow.getElement()) {
+                    addResult('basic-results', 'success', '✅ Window created successfully');
+                } else {
+                    addResult('basic-results', 'error', '❌ Window element not found');
+                }
+                
+                if (document.body.contains(debugWindow.getElement())) {
+                    addResult('basic-results', 'success', '✅ Window added to DOM');
+                } else {
+                    addResult('basic-results', 'error', '❌ Window not in DOM');
+                }
+                
+            } catch (error) {
+                addResult('basic-results', 'error', `❌ Error creating window: ${error.message}`);
+            }
+        }
+        
+        function testVisibilityToggle() {
+            try {
+                if (!debugWindow) {
+                    addResult('basic-results', 'error', '❌ No window to test');
+                    return;
+                }
+                
+                debugWindow.hide();
+                if (debugWindow.isHidden()) {
+                    addResult('basic-results', 'success', '✅ Window hidden successfully');
+                } else {
+                    addResult('basic-results', 'error', '❌ Window hide failed');
+                }
+                
+                debugWindow.show();
+                if (!debugWindow.isHidden()) {
+                    addResult('basic-results', 'success', '✅ Window shown successfully');
+                } else {
+                    addResult('basic-results', 'error', '❌ Window show failed');
+                }
+                
+            } catch (error) {
+                addResult('basic-results', 'error', `❌ Error in visibility test: ${error.message}`);
+            }
+        }
+        
+        function testDestruction() {
+            try {
+                if (!debugWindow) {
+                    addResult('basic-results', 'error', '❌ No window to destroy');
+                    return;
+                }
+                
+                const element = debugWindow.getElement();
+                debugWindow.destroy();
+                
+                if (!document.body.contains(element)) {
+                    addResult('basic-results', 'success', '✅ Window destroyed and removed from DOM');
+                } else {
+                    addResult('basic-results', 'error', '❌ Window element still in DOM');
+                }
+                
+                debugWindow = null;
+                
+            } catch (error) {
+                addResult('basic-results', 'error', `❌ Error destroying window: ${error.message}`);
+            }
+        }
+        
+        // Test 2: Collapse Functionality
+        function testCollapseToggle() {
+            clearResults('collapse-results');
+            try {
+                if (!debugWindow) {
+                    debugWindow = new DebugWindow({ title: 'Collapse Test' }).init();
+                }
+                
+                const initialCollapsed = debugWindow.isCollapsed;
+                debugWindow.toggleCollapse();
+                
+                if (debugWindow.isCollapsed !== initialCollapsed) {
+                    addResult('collapse-results', 'success', '✅ Collapse state toggled');
+                } else {
+                    addResult('collapse-results', 'error', '❌ Collapse state not changed');
+                }
+                
+                const hasCollapsedClass = debugWindow.getElement().classList.contains('collapsed');
+                if (debugWindow.isCollapsed === hasCollapsedClass) {
+                    addResult('collapse-results', 'success', '✅ CSS class matches collapse state');
+                } else {
+                    addResult('collapse-results', 'error', '❌ CSS class does not match collapse state');
+                }
+                
+            } catch (error) {
+                addResult('collapse-results', 'error', `❌ Error in collapse test: ${error.message}`);
+            }
+        }
+        
+        function testCollapsePersistence() {
+            try {
+                if (!debugWindow) {
+                    addResult('collapse-results', 'error', '❌ No window for persistence test');
+                    return;
+                }
+                
+                // Set to collapsed
+                debugWindow.toggleCollapse();
+                const wasCollapsed = debugWindow.isCollapsed;
+                
+                debugWindow.saveState();
+                debugWindow.destroy();
+                
+                // Recreate and load state
+                debugWindow = new DebugWindow({ title: 'Persistence Test' }).init();
+                
+                if (debugWindow.isCollapsed === wasCollapsed) {
+                    addResult('collapse-results', 'success', '✅ Collapse state persisted');
+                } else {
+                    addResult('collapse-results', 'error', '❌ Collapse state not persisted');
+                }
+                
+            } catch (error) {
+                addResult('collapse-results', 'error', `❌ Error in persistence test: ${error.message}`);
+            }
+        }
+        
+        function testCollapseButton() {
+            try {
+                if (!debugWindow) {
+                    addResult('collapse-results', 'error', '❌ No window for button test');
+                    return;
+                }
+                
+                const minimizeBtn = debugWindow.getElement().querySelector('.debug-btn');
+                if (minimizeBtn && minimizeBtn.innerHTML === '−') {
+                    addResult('collapse-results', 'success', '✅ Minimize button found');
+                    
+                    // Simulate click
+                    const initialState = debugWindow.isCollapsed;
+                    minimizeBtn.click();
+                    
+                    if (debugWindow.isCollapsed !== initialState) {
+                        addResult('collapse-results', 'success', '✅ Minimize button works');
+                    } else {
+                        addResult('collapse-results', 'error', '❌ Minimize button not working');
+                    }
+                } else {
+                    addResult('collapse-results', 'error', '❌ Minimize button not found');
+                }
+                
+            } catch (error) {
+                addResult('collapse-results', 'error', `❌ Error in button test: ${error.message}`);
+            }
+        }
+        
+        // Test 3: Text Input Functionality
+        function testTextInputCreation() {
+            clearResults('input-results');
+            try {
+                if (!debugWindow) {
+                    debugWindow = new DebugWindow({ title: 'Input Test' }).init();
+                }
+                
+                debugWindow.clear();
+                debugWindow.addTextInput('Test Input', 'default value', (value) => {
+                    console.log('Input changed:', value);
+                });
+                
+                const inputElement = debugWindow.getElement().querySelector('.text-input');
+                if (inputElement) {
+                    addResult('input-results', 'success', '✅ Text input created');
+                    
+                    if (inputElement.value === 'default value') {
+                        addResult('input-results', 'success', '✅ Default value set correctly');
+                    } else {
+                        addResult('input-results', 'error', '❌ Default value not set');
+                    }
+                } else {
+                    addResult('input-results', 'error', '❌ Text input not found');
+                }
+                
+            } catch (error) {
+                addResult('input-results', 'error', `❌ Error creating input: ${error.message}`);
+            }
+        }
+        
+        function testTextInputEvents() {
+            try {
+                const inputElement = debugWindow.getElement().querySelector('.text-input');
+                if (!inputElement) {
+                    addResult('input-results', 'error', '❌ No input element to test');
+                    return;
+                }
+                
+                let eventFired = false;
+                
+                // Add a test input with event handler
+                debugWindow.addTextInput('Event Test', '', (value) => {
+                    eventFired = true;
+                    console.log('Event test input changed:', value);
+                });
+                
+                const eventTestInput = [...debugWindow.getElement().querySelectorAll('.text-input')].pop();
+                
+                // Simulate input
+                eventTestInput.value = 'test value';
+                eventTestInput.dispatchEvent(new Event('input', { bubbles: true }));
+                
+                setTimeout(() => {
+                    if (eventFired) {
+                        addResult('input-results', 'success', '✅ Input events working');
+                    } else {
+                        addResult('input-results', 'error', '❌ Input events not firing');
+                    }
+                }, 100);
+                
+            } catch (error) {
+                addResult('input-results', 'error', `❌ Error testing events: ${error.message}`);
+            }
+        }
+        
+        function testTextInputValues() {
+            try {
+                debugWindow.addTextInput('Value Test', 'initial', null, { 
+                    placeholder: 'Test placeholder' 
+                });
+                
+                const valueTestInput = [...debugWindow.getElement().querySelectorAll('.text-input')].pop();
+                
+                if (valueTestInput.placeholder === 'Test placeholder') {
+                    addResult('input-results', 'success', '✅ Placeholder set correctly');
+                } else {
+                    addResult('input-results', 'error', '❌ Placeholder not set');
+                }
+                
+                if (valueTestInput.value === 'initial') {
+                    addResult('input-results', 'success', '✅ Initial value set correctly');
+                } else {
+                    addResult('input-results', 'error', '❌ Initial value not set');
+                }
+                
+            } catch (error) {
+                addResult('input-results', 'error', `❌ Error testing values: ${error.message}`);
+            }
+        }
+        
+        // Test 4: State Management
+        function testStateSaving() {
+            clearResults('state-results');
+            try {
+                if (!debugWindow) {
+                    debugWindow = new DebugWindow({ title: 'State Test' }).init();
+                }
+                
+                debugWindow.saveState();
+                const saved = localStorage.getItem('debugWindow');
+                
+                if (saved) {
+                    const state = JSON.parse(saved);
+                    if (state.title && state.position && state.size) {
+                        addResult('state-results', 'success', '✅ State saved successfully');
+                    } else {
+                        addResult('state-results', 'error', '❌ State incomplete');
+                    }
+                } else {
+                    addResult('state-results', 'error', '❌ State not saved');
+                }
+                
+            } catch (error) {
+                addResult('state-results', 'error', `❌ Error saving state: ${error.message}`);
+            }
+        }
+        
+        function testStateLoading() {
+            try {
+                const testState = {
+                    title: 'Loaded State Test',
+                    position: { x: 200, y: 200 },
+                    size: { width: 400, height: 500 },
+                    visible: true,
+                    collapsed: true
+                };
+                
+                localStorage.setItem('debugWindow', JSON.stringify(testState));
+                
+                if (debugWindow) debugWindow.destroy();
+                debugWindow = new DebugWindow().init();
+                
+                if (debugWindow.options.title === testState.title) {
+                    addResult('state-results', 'success', '✅ Title loaded from state');
+                } else {
+                    addResult('state-results', 'error', '❌ Title not loaded');
+                }
+                
+                if (debugWindow.isCollapsed === testState.collapsed) {
+                    addResult('state-results', 'success', '✅ Collapsed state loaded');
+                } else {
+                    addResult('state-results', 'error', '❌ Collapsed state not loaded');
+                }
+                
+            } catch (error) {
+                addResult('state-results', 'error', `❌ Error loading state: ${error.message}`);
+            }
+        }
+        
+        function testStateClearing() {
+            try {
+                debugWindow.clearState();
+                const cleared = localStorage.getItem('debugWindow');
+                
+                if (!cleared) {
+                    addResult('state-results', 'success', '✅ State cleared successfully');
+                } else {
+                    addResult('state-results', 'error', '❌ State not cleared');
+                }
+                
+            } catch (error) {
+                addResult('state-results', 'error', `❌ Error clearing state: ${error.message}`);
+            }
+        }
+        
+        // Test 5: Integration Test
+        function runFullIntegrationTest() {
+            clearResults('integration-results');
+            addResult('integration-results', 'info', '🔄 Running full integration test...');
+            
+            setTimeout(() => {
+                try {
+                    // Clean start
+                    if (debugWindow) debugWindow.destroy();
+                    localStorage.removeItem('debugWindow');
+                    
+                    // Create window
+                    debugWindow = new DebugWindow({
+                        title: 'Integration Test',
+                        position: { x: 50, y: 50 },
+                        size: { width: 350, height: 450 }
+                    }).init();
+                    
+                    // Add content
+                    debugWindow.addLog('Integration test started', 'info');
+                    debugWindow.addTextInput('Server', 'localhost', (value) => {
+                        debugWindow.addLog(`Server: ${value}`, 'info');
+                    });
+                    debugWindow.addTextInput('Port', '8080', (value) => {
+                        debugWindow.addLog(`Port: ${value}`, 'info');
+                    });
+                    
+                    // Test collapse
+                    debugWindow.toggleCollapse();
+                    debugWindow.toggleCollapse();
+                    
+                    // Save state
+                    debugWindow.saveState();
+                    
+                    // Destroy and recreate
+                    debugWindow.destroy();
+                    debugWindow = new DebugWindow().init();
+                    
+                    addResult('integration-results', 'success', '✅ Full integration test completed');
+                    addResult('integration-results', 'info', `📊 Total test results: ${testResults.length} tests`);
+                    
+                } catch (error) {
+                    addResult('integration-results', 'error', `❌ Integration test failed: ${error.message}`);
+                }
+            }, 1000);
+        }
+        
+        // Auto-run basic tests on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('🔍 Starting validation tests...');
+                testBasicCreation();
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

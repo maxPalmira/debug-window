@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Window Fix Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #1a1a1a; 
+            color: #fff; 
+            padding: 20px; 
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        button { 
+            background: #007acc; 
+            color: white; 
+            border: none; 
+            padding: 15px; 
+            margin: 10px; 
+            border-radius: 4px; 
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #log { 
+            background: #2d2d2d; 
+            border: 1px solid #555; 
+            padding: 15px; 
+            margin: 20px 0; 
+            border-radius: 8px; 
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug Window Issue Fix</h1>
+    
+    <p><strong>The Problem:</strong> <code>debugWindow.addTextInput is not a function</code></p>
+    
+    <button onclick="runDiagnostics()">🔍 Run Diagnostics</button>
+    <button onclick="testFresh()">🆕 Test Fresh Instance</button>
+    <button onclick="clearCacheAndReload()">🗑️ Clear Cache & Reload</button>
+    
+    <div id="log"></div>
+
+    <!-- Force cache busting with timestamp -->
+    <script src="https://cdn.jsdelivr.net/npm/moveable@0.53.0/dist/moveable.min.js"></script>
+    <script src="debug-window.js?v=<?php echo time(); ?>"></script>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function runDiagnostics() {
+            document.getElementById('log').innerHTML = '';
+            log('🔍 Starting comprehensive diagnostics...', 'info');
+            
+            // 1. Check if DebugWindow class exists
+            log(`1. DebugWindow class exists: ${typeof DebugWindow !== 'undefined'}`, 
+                typeof DebugWindow !== 'undefined' ? 'success' : 'error');
+            
+            if (typeof DebugWindow === 'undefined') {
+                log('❌ CRITICAL: DebugWindow class not found! File not loaded properly.', 'error');
+                return;
+            }
+            
+            // 2. Check prototype methods
+            const methods = Object.getOwnPropertyNames(DebugWindow.prototype);
+            log(`2. Available methods: ${methods.join(', ')}`, 'info');
+            
+            // 3. Specifically check for addTextInput
+            const hasAddTextInput = methods.includes('addTextInput');
+            log(`3. addTextInput method exists in prototype: ${hasAddTextInput}`, 
+                hasAddTextInput ? 'success' : 'error');
+            
+            // 4. Create instance and test
+            try {
+                const testInstance = new DebugWindow({
+                    title: 'Diagnostic Test',
+                    position: { x: 50, y: 50 }
+                });
+                
+                log('4. ✅ Instance created successfully', 'success');
+                
+                // 5. Check if method exists on instance
+                const instanceHasMethod = typeof testInstance.addTextInput === 'function';
+                log(`5. addTextInput exists on instance: ${instanceHasMethod}`, 
+                    instanceHasMethod ? 'success' : 'error');
+                
+                if (!instanceHasMethod) {
+                    log(`   Instance type: ${typeof testInstance.addTextInput}`, 'error');
+                    log(`   Instance methods: ${Object.getOwnPropertyNames(testInstance).join(', ')}`, 'info');
+                }
+                
+                // 6. Try to initialize and test
+                testInstance.init();
+                log('6. ✅ Instance initialized successfully', 'success');
+                
+                // 7. Try the actual method call
+                if (instanceHasMethod) {
+                    testInstance.addTextInput('Test Input', 'test value', (value) => {
+                        log(`✅ Input callback fired: ${value}`, 'success');
+                    });
+                    log('7. ✅ addTextInput method call successful!', 'success');
+                } else {
+                    log('7. ❌ Cannot test method - not found on instance', 'error');
+                }
+                
+                // Clean up
+                setTimeout(() => {
+                    testInstance.destroy();
+                    log('🧹 Test instance cleaned up', 'info');
+                }, 2000);
+                
+            } catch (error) {
+                log(`4. ❌ Error creating/testing instance: ${error.message}`, 'error');
+                log(`   Stack: ${error.stack}`, 'error');
+            }
+        }
+        
+        function testFresh() {
+            log('🆕 Testing completely fresh instance...', 'info');
+            
+            try {
+                // Create a completely new instance
+                const freshWindow = new DebugWindow({
+                    title: 'Fresh Test Window',
+                    position: { x: 200, y: 200 },
+                    size: { width: 300, height: 400 },
+                    visible: true
+                });
+                
+                freshWindow.init();
+                
+                // Add basic content first
+                freshWindow.addLog('Fresh instance test', 'info');
+                
+                // Now try addTextInput
+                freshWindow.addTextInput('Fresh Input', 'hello world', (value) => {
+                    log(`✅ Fresh input callback: ${value}`, 'success');
+                    freshWindow.addLog(`Input changed to: ${value}`, 'info');
+                });
+                
+                log('✅ Fresh instance test successful!', 'success');
+                
+                // Add collapse test
+                freshWindow.toggleCollapse();
+                setTimeout(() => {
+                    freshWindow.toggleCollapse();
+                    log('✅ Collapse functionality works!', 'success');
+                }, 1000);
+                
+            } catch (error) {
+                log(`❌ Fresh instance test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearCacheAndReload() {
+            log('🗑️ Attempting to clear cache and reload...', 'info');
+            // Force reload with cache clearing
+            window.location.reload(true);
+        }
+        
+        // Auto-run diagnostics on load
+        window.addEventListener('load', () => {
+            setTimeout(runDiagnostics, 500);
+        });
+    </script>
+</body>
+</html> 

@@ -1,8 +1,8 @@
 /*!
  * DebugWindow - A draggable, resizable debug panel for web applications
- * Version: 1.0.1
- * Updated: More compact styling with smaller fonts and reduced padding
- * Features: Draggable by icon, resizable, localStorage state persistence, multiple UI elements
+ * Version: 1.0.2
+ * Updated: Added text input fields and collapsible window functionality
+ * Features: Draggable by icon, resizable, localStorage state persistence, multiple UI elements, collapsible
  * Dependencies: Moveable.js (must be loaded separately)
  * Usage: const debugWindow = new DebugWindow(options).init();
  */
@@ -345,6 +345,53 @@
     font-weight: bold;
 }
 
+/* Text Inputs */
+.input-item {
+    margin-bottom: 6px;
+}
+
+.input-label {
+    display: block;
+    font-size: 10px;
+    color: #aaaaaa;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.text-input {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 10px;
+    color: #ffffff;
+    font-family: 'Courier New', monospace;
+    transition: border-color 0.2s, background-color 0.2s;
+    box-sizing: border-box;
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: #007acc;
+    background: #2a2a2a;
+}
+
+.text-input::placeholder {
+    color: #666666;
+    font-style: italic;
+}
+
+/* Collapsed State */
+.debug-window.collapsed .debug-content {
+    display: none;
+}
+
+.debug-window.collapsed {
+    height: auto !important;
+    min-height: auto !important;
+}
+
 /* Moveable.js Styling */
 .moveable-control-box .moveable-control {
     background: transparent !important;
@@ -403,6 +450,7 @@
                 position: options.position || { x: 100, y: 100 },
                 size: options.size || { width: 300, height: 400 },
                 visible: options.visible !== false,
+                collapsed: options.collapsed || false,
                 storageKey: options.storageKey || 'debugWindow'
             };
             
@@ -410,6 +458,7 @@
             this.window = null;
             this.moveable = null;
             this.isVisible = this.options.visible;
+            this.isCollapsed = this.options.collapsed;
             this.sections = new Map();
             this.logCount = 0;
             this.radioGroups = new Map();
@@ -431,6 +480,10 @@
             
             if (!this.isVisible) {
                 this.window.classList.add('hidden');
+            }
+            
+            if (this.isCollapsed) {
+                this.window.classList.add('collapsed');
             }
             
             // Create header
@@ -455,13 +508,21 @@
             const controls = document.createElement('div');
             controls.className = 'debug-controls';
             
-            // Only close button
+            // Minimize/collapse button
+            const minimizeBtn = document.createElement('button');
+            minimizeBtn.className = 'debug-btn';
+            minimizeBtn.innerHTML = '−';
+            minimizeBtn.title = 'Minimize';
+            minimizeBtn.addEventListener('click', () => this.toggleCollapse());
+            
+            // Close button
             const closeBtn = document.createElement('button');
             closeBtn.className = 'debug-btn';
             closeBtn.innerHTML = '×';
             closeBtn.title = 'Close';
             closeBtn.addEventListener('click', () => this.hide());
             
+            controls.appendChild(minimizeBtn);
             controls.appendChild(closeBtn);
             
             header.appendChild(titleContainer);
@@ -478,6 +539,7 @@
             this.header = header;
             this.content = content;
             this.dragIcon = dragIcon;
+            this.minimizeBtn = minimizeBtn;
         }
         
         init() {
@@ -567,6 +629,7 @@
                     height: parseInt(this.window.style.height)
                 },
                 visible: this.isVisible,
+                collapsed: this.isCollapsed,
                 timestamp: Date.now()
             };
             
@@ -601,6 +664,20 @@
                 
                 if (typeof state.visible === 'boolean') {
                     this.isVisible = state.visible;
+                    if (this.isVisible) {
+                        this.window.classList.remove('hidden');
+                    } else {
+                        this.window.classList.add('hidden');
+                    }
+                }
+                
+                if (typeof state.collapsed === 'boolean') {
+                    this.isCollapsed = state.collapsed;
+                    if (this.isCollapsed) {
+                        this.window.classList.add('collapsed');
+                    } else {
+                        this.window.classList.remove('collapsed');
+                    }
                 }
             } catch (error) {
                 console.warn('Failed to load debug window state:', error);
@@ -648,6 +725,7 @@
                     height: parseInt(this.window.style.height)
                 },
                 visible: this.isVisible,
+                collapsed: this.isCollapsed,
                 sections: Array.from(this.sections.keys()),
                 logCount: this.logCount
             };
@@ -685,6 +763,20 @@
         
         toggle() {
             return this.isVisible ? this.hide() : this.show();
+        }
+        
+        toggleCollapse() {
+            this.isCollapsed = !this.isCollapsed;
+            if (this.isCollapsed) {
+                this.window.classList.add('collapsed');
+            } else {
+                this.window.classList.remove('collapsed');
+            }
+            
+            // Auto-save collapsed state
+            this.saveState();
+            
+            return this;
         }
         
         destroy() {
@@ -898,6 +990,41 @@
             return this;
         }
         
+        addTextInput(label, value = '', onChange, options = {}) {
+            const sectionName = options.section || 'Inputs';
+            const section = this.getOrCreateSection(sectionName);
+            
+            const container = document.createElement('div');
+            container.className = 'input-item';
+            
+            const labelElement = document.createElement('label');
+            labelElement.className = 'input-label';
+            labelElement.textContent = label;
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'text-input';
+            input.value = value;
+            input.placeholder = options.placeholder || '';
+            
+            if (onChange) {
+                input.addEventListener('input', (e) => {
+                    onChange(e.target.value, e);
+                });
+                
+                input.addEventListener('change', (e) => {
+                    onChange(e.target.value, e);
+                });
+            }
+            
+            container.appendChild(labelElement);
+            container.appendChild(input);
+            
+            section.appendChild(container);
+            
+            return this;
+        }
+        
         updateMetric(label, newValue) {
             const metrics = this.window.querySelectorAll('.metric-item');
             for (const metric of metrics) {
@@ -1007,6 +1134,27 @@
             this.addMetric('Uptime', '2h 34m');
             this.addMetric('Active Users', '127');
             this.addMetric('Network I/O', '1.2 MB/s');
+            
+            // Add text inputs
+            this.addTextInput('Server URL', 'https://api.example.com', (value) => {
+                this.addLog(`Server URL updated to: ${value}`, 'info');
+            }, { placeholder: 'Enter server URL...' });
+            
+            this.addTextInput('API Key', '', (value) => {
+                this.addLog(`API Key ${value ? 'updated' : 'cleared'}`, 'info');
+            }, { placeholder: 'Enter your API key...' });
+            
+            this.addTextInput('Username', 'admin', (value) => {
+                this.addLog(`Username changed to: ${value}`, 'info');
+            });
+            
+            this.addTextInput('Timeout (ms)', '5000', (value) => {
+                if (!isNaN(value) && value > 0) {
+                    this.addLog(`Timeout set to ${value}ms`, 'info');
+                } else if (value) {
+                    this.addLog('Invalid timeout value', 'warning');
+                }
+            }, { placeholder: 'Enter timeout in milliseconds...' });
             
             // Simulate real-time metric updates
             let cpuUsage = 45;

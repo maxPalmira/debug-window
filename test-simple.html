@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Debug Test</title>
+</head>
+<body>
+    <h1>Debug Window Test</h1>
+    <button onclick="testDebugWindow()">Test Debug Window</button>
+    <div id="output"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/moveable@0.53.0/dist/moveable.min.js"></script>
+    <script src="debug-window.js"></script>
+    
+    <script>
+        function log(message) {
+            document.getElementById('output').innerHTML += '<div>' + message + '</div>';
+            console.log(message);
+        }
+        
+        function testDebugWindow() {
+            try {
+                log('1. Testing DebugWindow class existence...');
+                if (typeof DebugWindow === 'undefined') {
+                    log('ERROR: DebugWindow class not found!');
+                    return;
+                }
+                log('✅ DebugWindow class found');
+                
+                log('2. Creating DebugWindow instance...');
+                const debugWindow = new DebugWindow({
+                    title: 'Test Window',
+                    position: { x: 100, y: 100 }
+                });
+                log('✅ DebugWindow instance created');
+                
+                log('3. Checking available methods...');
+                const methods = Object.getOwnPropertyNames(DebugWindow.prototype);
+                log('Available methods: ' + methods.join(', '));
+                
+                log('4. Checking for addTextInput method...');
+                if (typeof debugWindow.addTextInput === 'function') {
+                    log('✅ addTextInput method found');
+                } else {
+                    log('❌ addTextInput method NOT found');
+                    log('Type of addTextInput: ' + typeof debugWindow.addTextInput);
+                }
+                
+                log('5. Initializing window...');
+                debugWindow.init();
+                log('✅ Window initialized');
+                
+                log('6. Testing addTextInput...');
+                debugWindow.addTextInput('Test Input', 'test value', (value) => {
+                    log('Input changed: ' + value);
+                });
+                log('✅ addTextInput worked!');
+                
+            } catch (error) {
+                log('ERROR: ' + error.message);
+                log('Stack: ' + error.stack);
+            }
+        }
+    </script>
+</body>
+</html> 
