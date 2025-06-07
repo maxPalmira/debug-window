@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete DebugWindow Test - GitHub Raw File</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .loading { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover { background: #0056b3; }
+        
+        .danger { background: #dc3545; }
+        .danger:hover { background: #c82333; }
+        
+        .warning { background: #ffc107; color: #212529; }
+        .warning:hover { background: #e0a800; }
+        
+        .success-btn { background: #28a745; }
+        .success-btn:hover { background: #218838; }
+        
+        .counter {
+            background: #6f42c1;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        .url-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .input-group input, .input-group select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        #testResults {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Complete DebugWindow Test Suite</h1>
+        <p>Testing the debug window component loaded directly from GitHub raw file.</p>
+        
+        <div class="url-info">
+            <strong>🔗 Testing URLs:</strong><br>
+            <code id="primary-url">https://raw.githubusercontent.com/maxPalmira/debug-window/main/debug-window.js</code><br>
+            <small>Fallback: Local file (./debug-window.js)</small>
+        </div>
+        
+        <div id="load-status" class="status loading">
+            🔄 Loading component from GitHub...
+        </div>
+        
+        <div id="test-controls" style="display: none;">
+            
+            <!-- CORE METHODS -->
+            <div class="test-section">
+                <h3>🎯 Core Methods</h3>
+                <div class="button-grid">
+                    <button onclick="createDebugWindow()">Create Debug Window</button>
+                    <button onclick="initDebugWindow()">Initialize Window</button>
+                    <button onclick="showWindow()">Show Window</button>
+                    <button onclick="hideWindow()">Hide Window</button>
+                    <button onclick="toggleWindow()">Toggle Window</button>
+                    <button onclick="destroyWindow()" class="danger">Destroy Window</button>
+                </div>
+            </div>
+            
+            <!-- LOGGING METHODS -->
+            <div class="test-section">
+                <h3>📝 Logging Methods <span id="logCounter" class="counter">0</span></h3>
+                <div class="button-grid">
+                    <button onclick="addInfoLog()">Add Info Log</button>
+                    <button onclick="addWarningLog()" class="warning">Add Warning Log</button>
+                    <button onclick="addErrorLog()" class="danger">Add Error Log</button>
+                    <button onclick="addRandomLogs()">Add 5 Random Logs</button>
+                    <button onclick="clearLogs()" class="warning">Clear All Logs</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="logInput" placeholder="Enter log message">
+                    <select id="logType">
+                        <option value="info">Info</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                    </select>
+                    <button onclick="addCustomLog()">Add Log</button>
+                </div>
+            </div>
+            
+            <!-- METRICS -->
+            <div class="test-section">
+                <h3>📊 Metrics <span id="metricCounter" class="counter">0</span></h3>
+                <div class="button-grid">
+                    <button onclick="addSystemMetrics()">Add System Metrics</button>
+                    <button onclick="addPerformanceMetrics()">Add Performance Metrics</button>
+                    <button onclick="addRandomMetric()">Add Random Metric</button>
+                    <button onclick="updateRandomMetric()">Update Random Metric</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="metricLabel" placeholder="Metric label">
+                    <input type="text" id="metricValue" placeholder="Metric value">
+                    <button onclick="addCustomMetric()">Add Metric</button>
+                </div>
+            </div>
+            
+            <!-- UI ELEMENTS -->
+            <div class="test-section">
+                <h3>🎛️ Interactive Elements <span id="uiCounter" class="counter">0</span></h3>
+                <div class="button-grid">
+                    <button onclick="addConfigButtons()">Add Config Buttons</button>
+                    <button onclick="addCheckboxes()">Add Checkboxes</button>
+                    <button onclick="addRadioGroups()">Add Radio Groups</button>
+                    <button onclick="addTextInputs()">Add Text Inputs</button>
+                    <button onclick="addAllUIElements()">Add All UI Elements</button>
+                </div>
+            </div>
+            
+            <!-- WINDOW CONTROLS -->
+            <div class="test-section">
+                <h3>🪟 Window Controls</h3>
+                <div class="button-grid">
+                    <button onclick="toggleCollapse()">Toggle Collapse</button>
+                    <button onclick="setRandomPosition()">Random Position</button>
+                    <button onclick="setRandomSize()">Random Size</button>
+                    <button onclick="setCustomTitle()">Set Custom Title</button>
+                    <button onclick="clearWindow()">Clear Content</button>
+                    <button onclick="resetToDefaults()">Reset to Defaults</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="titleInput" placeholder="Enter new title">
+                    <button onclick="setTitleFromInput()">Set Title</button>
+                </div>
+            </div>
+            
+            <!-- DEMO CONTENT -->
+            <div class="test-section">
+                <h3>🎪 Demo & Stress Tests</h3>
+                <div class="button-grid">
+                    <button onclick="addDemoContent()" class="success-btn">Add Demo Content</button>
+                    <button onclick="stressTestLogs()" class="warning">Stress Test (100 logs)</button>
+                    <button onclick="stressTestMetrics()" class="warning">Stress Test (50 metrics)</button>
+                    <button onclick="runAllTests()" class="success-btn">🚀 Run All Tests</button>
+                </div>
+            </div>
+            
+            <!-- TESTING RESULTS -->
+            <div class="test-section">
+                <h3>📋 Test Results</h3>
+                <div id="testResults"></div>
+                <button onclick="clearResults()" class="warning">Clear Results</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load the required Moveable dependency -->
+    <script src="https://daybrush.com/moveable/release/latest/dist/moveable.min.js"></script>
+    
+    <!-- We'll load debug window dynamically with fallback -->
+    
+    <script>
+        let debugWindow = null;
+        let logCount = 0;
+        let metricCount = 0;
+        let uiCount = 0;
+        
+        const statusEl = document.getElementById('load-status');
+        const controlsEl = document.getElementById('test-controls');
+        const resultsEl = document.getElementById('testResults');
+        
+        // Test loading with fallback
+        async function loadDebugWindowWithFallback() {
+            const sources = [
+                'https://raw.githubusercontent.com/maxPalmira/debug-window/main/debug-window.js',
+                './debug-window.js' // Local fallback
+            ];
+            
+            for (const src of sources) {
+                try {
+                    addResult(`🔄 Trying to load from: ${src}`);
+                    
+                    const script = document.createElement('script');
+                    script.src = src;
+                    
+                    await new Promise((resolve, reject) => {
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                        
+                        // Timeout after 10 seconds
+                        setTimeout(() => reject(new Error('Load timeout')), 10000);
+                    });
+                    
+                    if (typeof DebugWindow !== 'undefined') {
+                        statusEl.textContent = `✅ Success! DebugWindow loaded from ${src.includes('github') ? 'GitHub' : 'local file'}`;
+                        statusEl.className = 'status success';
+                        controlsEl.style.display = 'block';
+                        addResult(`✅ Component loaded successfully from: ${src}`);
+                        return true;
+                    }
+                } catch (error) {
+                    addResult(`❌ Failed to load from ${src}: ${error.message}`);
+                }
+            }
+            
+            // If all sources failed
+            statusEl.textContent = '❌ Failed to load DebugWindow from all sources';
+            statusEl.className = 'status error';
+            addResult('❌ All loading attempts failed');
+            return false;
+        }
+        
+        // Start loading when page is ready
+        window.addEventListener('load', () => {
+            loadDebugWindowWithFallback();
+        });
+        
+        // CORE METHODS
+        function createDebugWindow() {
+            if (debugWindow) {
+                debugWindow.destroy();
+            }
+            debugWindow = new DebugWindow({
+                title: 'Test Debug Window',
+                position: { x: 50, y: 50 },
+                size: { width: 400, height: 500 }
+            });
+            addResult('✅ DebugWindow instance created');
+        }
+        
+        function initDebugWindow() {
+            if (!debugWindow) {
+                createDebugWindow();
+            }
+            debugWindow.init();
+            addResult('✅ DebugWindow initialized and displayed');
+        }
+        
+        function showWindow() {
+            if (!debugWindow) return;
+            debugWindow.show();
+            addResult('✅ Window shown');
+        }
+        
+        function hideWindow() {
+            if (!debugWindow) return;
+            debugWindow.hide();
+            addResult('✅ Window hidden');
+        }
+        
+        function toggleWindow() {
+            if (!debugWindow) return;
+            debugWindow.toggle();
+            addResult('✅ Window toggled');
+        }
+        
+        function destroyWindow() {
+            if (!debugWindow) return;
+            debugWindow.destroy();
+            debugWindow = null;
+            addResult('✅ Window destroyed');
+        }
+        
+        // LOGGING METHODS
+        function addInfoLog() {
+            if (!debugWindow) return;
+            debugWindow.addLog(`Info message #${++logCount} - ${new Date().toLocaleTimeString()}`, 'info');
+            updateCounters();
+            addResult('✅ Info log added');
+        }
+        
+        function addWarningLog() {
+            if (!debugWindow) return;
+            debugWindow.addLog(`Warning message #${++logCount} - Something needs attention`, 'warning');
+            updateCounters();
+            addResult('⚠️ Warning log added');
+        }
+        
+        function addErrorLog() {
+            if (!debugWindow) return;
+            debugWindow.addLog(`Error message #${++logCount} - Something went wrong!`, 'error');
+            updateCounters();
+            addResult('❌ Error log added');
+        }
+        
+        function addRandomLogs() {
+            if (!debugWindow) return;
+            const types = ['info', 'warning', 'error'];
+            const messages = [
+                'System started successfully',
+                'Processing user request',
+                'Database connection established',
+                'Cache invalidated',
+                'High memory usage detected',
+                'Network timeout occurred',
+                'User authentication failed',
+                'File upload completed'
+            ];
+            
+            for (let i = 0; i < 5; i++) {
+                const type = types[Math.floor(Math.random() * types.length)];
+                const message = messages[Math.floor(Math.random() * messages.length)];
+                debugWindow.addLog(`${message} (#${++logCount})`, type);
+            }
+            updateCounters();
+            addResult('✅ 5 random logs added');
+        }
+        
+        function addCustomLog() {
+            if (!debugWindow) return;
+            const message = document.getElementById('logInput').value;
+            const type = document.getElementById('logType').value;
+            if (message) {
+                debugWindow.addLog(message, type);
+                logCount++;
+                updateCounters();
+                addResult(`✅ Custom ${type} log added: "${message}"`);
+                document.getElementById('logInput').value = '';
+            }
+        }
+        
+        function clearLogs() {
+            if (!debugWindow) return;
+            debugWindow.clearLogs();
+            logCount = 0;
+            updateCounters();
+            addResult('✅ All logs cleared');
+        }
+        
+        // METRICS
+        function addSystemMetrics() {
+            if (!debugWindow) return;
+            debugWindow.addMetric('CPU Usage', `${Math.round(Math.random() * 100)}%`);
+            debugWindow.addMetric('Memory Usage', `${(Math.random() * 8).toFixed(1)} GB`);
+            debugWindow.addMetric('Disk Space', `${Math.round(Math.random() * 100)} GB`);
+            debugWindow.addMetric('Network I/O', `${(Math.random() * 10).toFixed(1)} MB/s`);
+            metricCount += 4;
+            updateCounters();
+            addResult('✅ System metrics added');
+        }
+        
+        function addPerformanceMetrics() {
+            if (!debugWindow) return;
+            debugWindow.addMetric('Page Load', `${Math.round(Math.random() * 2000)}ms`);
+            debugWindow.addMetric('API Response', `${Math.round(Math.random() * 500)}ms`);
+            debugWindow.addMetric('DOM Ready', `${Math.round(Math.random() * 1000)}ms`);
+            debugWindow.addMetric('FPS', `${Math.round(Math.random() * 60)}`);
+            metricCount += 4;
+            updateCounters();
+            addResult('✅ Performance metrics added');
+        }
+        
+        function addRandomMetric() {
+            if (!debugWindow) return;
+            const labels = ['Temperature', 'Pressure', 'Humidity', 'Speed', 'Count', 'Score', 'Level'];
+            const label = labels[Math.floor(Math.random() * labels.length)];
+            const value = Math.round(Math.random() * 1000);
+            debugWindow.addMetric(label, `${value}`);
+            metricCount++;
+            updateCounters();
+            addResult(`✅ Random metric "${label}: ${value}" added`);
+        }
+        
+        function updateRandomMetric() {
+            if (!debugWindow) return;
+            const value = Math.round(Math.random() * 100);
+            debugWindow.updateMetric('CPU Usage', `${value}%`);
+            addResult(`✅ CPU Usage updated to ${value}%`);
+        }
+        
+        function addCustomMetric() {
+            if (!debugWindow) return;
+            const label = document.getElementById('metricLabel').value;
+            const value = document.getElementById('metricValue').value;
+            if (label && value) {
+                debugWindow.addMetric(label, value);
+                metricCount++;
+                updateCounters();
+                addResult(`✅ Custom metric "${label}: ${value}" added`);
+                document.getElementById('metricLabel').value = '';
+                document.getElementById('metricValue').value = '';
+            }
+        }
+        
+        // UI ELEMENTS
+        function addConfigButtons() {
+            if (!debugWindow) return;
+            debugWindow.addConfigButton('Save Config', () => {
+                addResult('🔘 Save Config button clicked');
+            });
+            debugWindow.addConfigButton('Load Config', () => {
+                addResult('🔘 Load Config button clicked');
+            });
+            debugWindow.addConfigButton('Reset Config', () => {
+                addResult('🔘 Reset Config button clicked');
+            });
+            uiCount += 3;
+            updateCounters();
+            addResult('✅ Config buttons added');
+        }
+        
+        function addCheckboxes() {
+            if (!debugWindow) return;
+            debugWindow.addCheckbox('Enable Feature A', false, (checked) => {
+                addResult(`☑️ Feature A ${checked ? 'enabled' : 'disabled'}`);
+            });
+            debugWindow.addCheckbox('Debug Mode', true, (checked) => {
+                addResult(`☑️ Debug Mode ${checked ? 'enabled' : 'disabled'}`);
+            });
+            debugWindow.addCheckbox('Auto Save', false, (checked) => {
+                addResult(`☑️ Auto Save ${checked ? 'enabled' : 'disabled'}`);
+            });
+            uiCount += 3;
+            updateCounters();
+            addResult('✅ Checkboxes added');
+        }
+        
+        function addRadioGroups() {
+            if (!debugWindow) return;
+            debugWindow.addRadioGroup('Theme', [
+                { label: 'Light', value: 'light' },
+                { label: 'Dark', value: 'dark', checked: true },
+                { label: 'Auto', value: 'auto' }
+            ], (value) => {
+                addResult(`🔘 Theme changed to: ${value}`);
+            });
+            
+            debugWindow.addRadioGroup('Quality', [
+                { label: 'Low', value: 'low' },
+                { label: 'Medium', value: 'medium', checked: true },
+                { label: 'High', value: 'high' }
+            ], (value) => {
+                addResult(`🔘 Quality changed to: ${value}`);
+            });
+            uiCount += 2;
+            updateCounters();
+            addResult('✅ Radio groups added');
+        }
+        
+        function addTextInputs() {
+            if (!debugWindow) return;
+            debugWindow.addTextInput('Username', 'admin', (value) => {
+                addResult(`📝 Username changed to: ${value}`);
+            });
+            debugWindow.addTextInput('API Key', '', (value) => {
+                addResult(`📝 API Key ${value ? 'updated' : 'cleared'}`);
+            }, { placeholder: 'Enter API key...' });
+            debugWindow.addTextInput('Timeout', '5000', (value) => {
+                addResult(`📝 Timeout set to: ${value}ms`);
+            });
+            uiCount += 3;
+            updateCounters();
+            addResult('✅ Text inputs added');
+        }
+        
+        function addAllUIElements() {
+            addConfigButtons();
+            addCheckboxes();
+            addRadioGroups();
+            addTextInputs();
+            addResult('✅ All UI elements added');
+        }
+        
+        // WINDOW CONTROLS
+        function toggleCollapse() {
+            if (!debugWindow) return;
+            debugWindow.toggleCollapse();
+            addResult('✅ Window collapse toggled');
+        }
+        
+        function setRandomPosition() {
+            if (!debugWindow) return;
+            const x = Math.random() * 500;
+            const y = Math.random() * 300;
+            debugWindow.setPosition(x, y);
+            addResult(`✅ Position set to (${Math.round(x)}, ${Math.round(y)})`);
+        }
+        
+        function setRandomSize() {
+            if (!debugWindow) return;
+            const width = 300 + Math.random() * 400;
+            const height = 250 + Math.random() * 350;
+            debugWindow.setSize(width, height);
+            addResult(`✅ Size set to ${Math.round(width)}x${Math.round(height)}`);
+        }
+        
+        function setCustomTitle() {
+            if (!debugWindow) return;
+            const titles = ['Super Debug', 'Test Panel', 'My Awesome Debug', 'Debug Master', 'Control Center'];
+            const title = titles[Math.floor(Math.random() * titles.length)];
+            debugWindow.setTitle(title);
+            addResult(`✅ Title set to "${title}"`);
+        }
+        
+        function setTitleFromInput() {
+            if (!debugWindow) return;
+            const title = document.getElementById('titleInput').value;
+            if (title) {
+                debugWindow.setTitle(title);
+                addResult(`✅ Title set to "${title}"`);
+                document.getElementById('titleInput').value = '';
+            }
+        }
+        
+        function clearWindow() {
+            if (!debugWindow) return;
+            debugWindow.clear();
+            logCount = 0;
+            metricCount = 0;
+            uiCount = 0;
+            updateCounters();
+            addResult('✅ Window content cleared');
+        }
+        
+        function resetToDefaults() {
+            if (!debugWindow) return;
+            debugWindow.resetToDefaults();
+            addResult('✅ Window reset to defaults');
+        }
+        
+        // DEMO CONTENT
+        function addDemoContent() {
+            if (!debugWindow) return;
+            debugWindow.addDemoContent();
+            addResult('✅ Demo content added with full feature showcase');
+        }
+        
+        function stressTestLogs() {
+            if (!debugWindow) return;
+            const types = ['info', 'warning', 'error'];
+            for (let i = 0; i < 100; i++) {
+                const type = types[i % 3];
+                debugWindow.addLog(`Stress test log #${i + 1} - Testing performance`, type);
+            }
+            logCount += 100;
+            updateCounters();
+            addResult('✅ Stress test: 100 logs added');
+        }
+        
+        function stressTestMetrics() {
+            if (!debugWindow) return;
+            for (let i = 0; i < 50; i++) {
+                debugWindow.addMetric(`Metric ${i + 1}`, `${Math.round(Math.random() * 1000)}`);
+            }
+            metricCount += 50;
+            updateCounters();
+            addResult('✅ Stress test: 50 metrics added');
+        }
+        
+        // TEST RUNNER
+        async function runAllTests() {
+            addResult('🚀 Running comprehensive test suite...');
+            
+            // Core functionality
+            createDebugWindow();
+            await delay(200);
+            initDebugWindow();
+            await delay(200);
+            
+            // Add content
+            addSystemMetrics();
+            await delay(200);
+            addRandomLogs();
+            await delay(200);
+            addConfigButtons();
+            await delay(200);
+            
+            // Test controls
+            setRandomPosition();
+            await delay(200);
+            setRandomSize();
+            await delay(200);
+            setCustomTitle();
+            await delay(200);
+            
+            addResult('🎉 All automated tests completed successfully!');
+        }
+        
+        // UTILITY FUNCTIONS
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        function addResult(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            resultsEl.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            resultsEl.scrollTop = resultsEl.scrollHeight;
+        }
+        
+        function clearResults() {
+            resultsEl.innerHTML = '';
+        }
+        
+        function updateCounters() {
+            document.getElementById('logCounter').textContent = logCount;
+            document.getElementById('metricCounter').textContent = metricCount;
+            document.getElementById('uiCounter').textContent = uiCount;
+        }
+        
+        // Initialize counters
+        updateCounters();
+        
+        // Error handling
+        window.addEventListener('error', (e) => {
+            statusEl.textContent = `❌ JavaScript Error: ${e.message}`;
+            statusEl.className = 'status error';
+            addResult(`❌ Error: ${e.message} at ${e.filename}:${e.lineno}`);
+        });
+        
+        // Log successful load
+        addResult('🔄 Test page loaded, waiting for component...');
+    </script>
+</body>
+</html> 

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Window Loading Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .loading { background: #fff3cd; color: #856404; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        .url { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        #log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🧪 Debug Window Loading Test</h1>
+        <p>This test verifies that the DebugWindow component can be loaded and used.</p>
+        
+        <div class="url">
+            <strong>Primary URL:</strong> https://raw.githubusercontent.com/maxPalmira/debug-window/main/debug-window.js<br>
+            <strong>Fallback URL:</strong> ./debug-window.js (local file)
+        </div>
+        
+        <div id="status" class="status loading">
+            🔄 Loading DebugWindow component...
+        </div>
+        
+        <div id="controls" style="display: none;">
+            <h3>🎮 Component Tests</h3>
+            <button onclick="testBasicUsage()">Test Basic Usage</button>
+            <button onclick="testAllFeatures()">Test All Features</button>
+            <button onclick="testStressTest()">Stress Test</button>
+            <button onclick="clearDebugWindow()">Clear Debug Window</button>
+            <button onclick="destroyDebugWindow()">Destroy Debug Window</button>
+        </div>
+        
+        <h3>📋 Test Log</h3>
+        <div id="log"></div>
+    </div>
+
+    <!-- Load Moveable dependency -->
+    <script src="https://daybrush.com/moveable/release/latest/dist/moveable.min.js"></script>
+    
+    <script>
+        let debugWindow = null;
+        
+        const statusEl = document.getElementById('status');
+        const controlsEl = document.getElementById('controls');
+        const logEl = document.getElementById('log');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logEl.innerHTML += `[${timestamp}] ${message}<br>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        async function loadDebugWindow() {
+            const sources = [
+                {
+                    url: 'https://raw.githubusercontent.com/maxPalmira/debug-window/main/debug-window.js',
+                    name: 'GitHub Raw File'
+                },
+                {
+                    url: './debug-window.js',
+                    name: 'Local File'
+                }
+            ];
+            
+            for (const source of sources) {
+                try {
+                    log(`🔄 Attempting to load from ${source.name}: ${source.url}`);
+                    
+                    const script = document.createElement('script');
+                    script.src = source.url;
+                    
+                    await new Promise((resolve, reject) => {
+                        script.onload = resolve;
+                        script.onerror = () => reject(new Error('Script failed to load'));
+                        document.head.appendChild(script);
+                        
+                        // 10 second timeout
+                        setTimeout(() => reject(new Error('Load timeout')), 10000);
+                    });
+                    
+                    // Check if DebugWindow is available
+                    if (typeof DebugWindow !== 'undefined') {
+                        statusEl.textContent = `✅ Success! Loaded from ${source.name}`;
+                        statusEl.className = 'status success';
+                        controlsEl.style.display = 'block';
+                        
+                        log(`✅ DebugWindow successfully loaded from ${source.name}`);
+                        log(`🔧 DebugWindow class available: ${typeof DebugWindow}`);
+                        
+                        // Test basic instantiation
+                        try {
+                            const testInstance = new DebugWindow({ title: 'Test Instance' });
+                            log(`✅ DebugWindow can be instantiated`);
+                            log(`🔧 Available methods: ${Object.getOwnPropertyNames(Object.getPrototypeOf(testInstance)).join(', ')}`);
+                        } catch (error) {
+                            log(`❌ Error instantiating DebugWindow: ${error.message}`);
+                        }
+                        
+                        return true;
+                    } else {
+                        throw new Error('DebugWindow not found after script load');
+                    }
+                    
+                } catch (error) {
+                    log(`❌ Failed to load from ${source.name}: ${error.message}`);
+                }
+            }
+            
+            // All sources failed
+            statusEl.textContent = '❌ Failed to load from all sources';
+            statusEl.className = 'status error';
+            log('❌ All loading attempts failed');
+            return false;
+        }
+        
+        function testBasicUsage() {
+            try {
+                if (debugWindow) {
+                    debugWindow.destroy();
+                }
+                
+                debugWindow = new DebugWindow({
+                    title: 'Basic Test',
+                    position: { x: 100, y: 100 },
+                    size: { width: 350, height: 400 }
+                }).init();
+                
+                debugWindow.addLog('✅ Basic usage test successful!', 'info');
+                debugWindow.addLog('This is a warning message', 'warning');
+                debugWindow.addLog('This is an error message', 'error');
+                
+                debugWindow.addMetric('Test Status', 'PASS');
+                debugWindow.addMetric('Load Time', '1.23s');
+                
+                log('✅ Basic usage test completed');
+                
+            } catch (error) {
+                log(`❌ Basic usage test failed: ${error.message}`);
+            }
+        }
+        
+        function testAllFeatures() {
+            try {
+                if (!debugWindow) {
+                    testBasicUsage();
+                }
+                
+                // Test all major features
+                debugWindow.addConfigButton('Test Button', () => {
+                    debugWindow.addLog('Button clicked!', 'info');
+                    log('✅ Config button works');
+                });
+                
+                debugWindow.addCheckbox('Enable Test', false, (checked) => {
+                    debugWindow.addLog(`Test ${checked ? 'enabled' : 'disabled'}`, 'info');
+                    log('✅ Checkbox works');
+                });
+                
+                debugWindow.addRadioGroup('Options', [
+                    { label: 'Option A', value: 'a', checked: true },
+                    { label: 'Option B', value: 'b' }
+                ], (value) => {
+                    debugWindow.addLog(`Selected: ${value}`, 'info');
+                    log('✅ Radio group works');
+                });
+                
+                debugWindow.addTextInput('Test Input', 'default', (value) => {
+                    debugWindow.addLog(`Input changed: ${value}`, 'info');
+                    log('✅ Text input works');
+                });
+                
+                // Test window controls
+                debugWindow.setTitle('Feature Test Window');
+                debugWindow.setPosition(150, 150);
+                debugWindow.setSize(400, 500);
+                
+                log('✅ All features test completed');
+                
+            } catch (error) {
+                log(`❌ All features test failed: ${error.message}`);
+            }
+        }
+        
+        function testStressTest() {
+            try {
+                if (!debugWindow) {
+                    testBasicUsage();
+                }
+                
+                // Add many logs
+                for (let i = 0; i < 20; i++) {
+                    const types = ['info', 'warning', 'error'];
+                    const type = types[i % 3];
+                    debugWindow.addLog(`Stress test log #${i + 1}`, type);
+                }
+                
+                // Add many metrics
+                for (let i = 0; i < 10; i++) {
+                    debugWindow.addMetric(`Metric ${i + 1}`, `${Math.round(Math.random() * 100)}`);
+                }
+                
+                log('✅ Stress test completed');
+                
+            } catch (error) {
+                log(`❌ Stress test failed: ${error.message}`);
+            }
+        }
+        
+        function clearDebugWindow() {
+            try {
+                if (debugWindow) {
+                    debugWindow.clear();
+                    log('✅ Debug window cleared');
+                }
+            } catch (error) {
+                log(`❌ Clear failed: ${error.message}`);
+            }
+        }
+        
+        function destroyDebugWindow() {
+            try {
+                if (debugWindow) {
+                    debugWindow.destroy();
+                    debugWindow = null;
+                    log('✅ Debug window destroyed');
+                }
+            } catch (error) {
+                log(`❌ Destroy failed: ${error.message}`);
+            }
+        }
+        
+        // Start loading when page loads
+        window.addEventListener('load', () => {
+            log('🔄 Page loaded, starting component loading test...');
+            loadDebugWindow();
+        });
+        
+        // Error handling
+        window.addEventListener('error', (e) => {
+            log(`❌ JavaScript Error: ${e.message} at ${e.filename}:${e.lineno}`);
+        });
+    </script>
+</body>
+</html> 
