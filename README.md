@@ -47,15 +47,58 @@ debugWindow.addMetric('Memory Usage', '2.1 GB');
 
 ## Installation
 
-### Option 1: Direct Download
+### 🚀 Option 1: GitHub Raw File (Recommended - No Installation Required!)
+Load directly from GitHub in any project:
+
+```html
+<!-- Load directly from GitHub -->
+<script src="https://raw.githubusercontent.com/maxPalmira/debug-window/main/debug-window.js"></script>
+<script>
+    const debugWindow = new DebugWindow().init();
+    debugWindow.addLog('Loaded from GitHub! 🎉', 'info');
+</script>
+```
+
+**Or with dynamic loading:**
+```javascript
+async function loadDebugWindow() {
+    const script = document.createElement('script');
+    script.src = 'https://raw.githubusercontent.com/maxPalmira/debug-window/main/debug-window.js';
+    
+    return new Promise((resolve, reject) => {
+        script.onload = () => resolve(window.DebugWindow);
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+const DebugWindow = await loadDebugWindow();
+const debugWindow = new DebugWindow().init();
+```
+
+**📖 See [INTEGRATION.md](INTEGRATION.md) for complete GitHub raw file usage guide**
+
+### Option 2: Use the Loader Utility
+Copy `debug-window-loader.js` to your project for easier management:
+
+```html
+<script src="debug-window-loader.js"></script>
+<script>
+    // Quick setup
+    const DebugWindow = await DebugWindowLoader.quickLoad('your-username');
+    const debugWindow = new DebugWindow().init();
+</script>
+```
+
+### Option 3: Direct Download
 Download `debug-window.js` and include it in your project.
 
-### Option 2: CDN (when available)
+### Option 4: CDN (when available)
 ```html
 <script src="https://cdn.jsdelivr.net/npm/debug-window@1.0.0/debug-window.js"></script>
 ```
 
-### Option 3: NPM (when published)
+### Option 5: NPM (when published)
 ```bash
 npm install debug-window
 ```
