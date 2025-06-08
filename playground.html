@@ -11,6 +11,10 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --animation-speed: 1s;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             transition: all 0.3s ease;
@@ -86,7 +90,7 @@
             border-radius: 25px;
             padding: 8px 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all var(--animation-speed, 0.3s) ease;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -304,6 +308,85 @@
                 group: 'Demo Controls',
                 placeholder: 'Enter your message...'
             });
+
+            // Range Sliders - New Feature Demo!
+            configConsole.addRangeSlider('Grid Opacity', {
+                min: 0,
+                max: 1,
+                value: 0.15,
+                step: 0.05,
+                formatter: (val) => `${Math.round(val * 100)}%`,
+                group: 'Demo Controls'
+            }, (value) => {
+                // Update grid line opacity in real-time
+                gridLines.forEach(line => {
+                    line.style.opacity = value;
+                });
+                configConsole.addLog(`Grid opacity set to ${Math.round(value * 100)}%`, 'info');
+            });
+
+            configConsole.addRangeSlider('Cell Size', {
+                min: 30,
+                max: 120,
+                value: 67,
+                step: 5,
+                suffix: 'px',
+                group: 'Demo Controls'
+            }, (value) => {
+                // Regenerate grid with new cell size
+                const svg = document.getElementById('grid-svg');
+                while (svg.children.length > 1) {
+                    svg.removeChild(svg.lastChild);
+                }
+                gridLines = [];
+                
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                
+                // Create vertical lines with new cell size
+                for (let x = 0; x <= width; x += value) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', x);
+                    line.setAttribute('y1', 0);
+                    line.setAttribute('x2', x);
+                    line.setAttribute('y2', height);
+                    line.setAttribute('class', 'grid-line');
+                    line.setAttribute('stroke', '#007acc');
+                    svg.appendChild(line);
+                    gridLines.push(line);
+                }
+                
+                // Create horizontal lines with new cell size
+                for (let y = 0; y <= height; y += value) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', 0);
+                    line.setAttribute('y1', y);
+                    line.setAttribute('x2', width);
+                    line.setAttribute('y2', y);
+                    line.setAttribute('class', 'grid-line');
+                    line.setAttribute('stroke', '#4a9eff');
+                    svg.appendChild(line);
+                    gridLines.push(line);
+                }
+                
+                configConsole.addLog(`Cell size changed to ${value}px`, 'info');
+                configConsole.updateMetric('Cell Size', `${value}x${value}px`);
+                configConsole.updateMetric('Grid Lines', gridLines.length);
+            });
+
+            configConsole.addRangeSlider('Animation Speed', {
+                min: 0.1,
+                max: 3.0,
+                value: 1.0,
+                step: 0.1,
+                suffix: 'x',
+                group: 'Demo Controls'
+            }, (value) => {
+                // Update CSS animation speeds
+                const root = document.documentElement;
+                root.style.setProperty('--animation-speed', `${1/value}s`);
+                configConsole.addLog(`Animation speed set to ${value}x`, 'info');
+            });
             
             // System Info group
             configConsole.addGroup('System Info', {
@@ -320,6 +403,8 @@
             configConsole.addLog('Config Console initialized with simple grid!', 'info');
             configConsole.addLog('Clean background with subtle vignette effect', 'info');
             configConsole.addLog('Perfect for a playground environment', 'info');
+            configConsole.addLog('🎚️ NEW: Range sliders now available!', 'info');
+            configConsole.addLog('Try the Grid Opacity and Cell Size sliders above', 'info');
             
             // Update metrics periodically
             setInterval(() => {
