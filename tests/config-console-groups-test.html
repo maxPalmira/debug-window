@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config Console Groups Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #007acc;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            background: #404040;
+            color: white;
+            border: 1px solid #666;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .test-btn:hover {
+            background: #505050;
+            border-color: #007acc;
+        }
+        
+        .description {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .description h3 {
+            margin-top: 0;
+            color: #87ceeb;
+        }
+        
+        code {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #f8f8f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Config Console - Custom Groups Test</h1>
+        
+        <div class="description">
+            <h3>Custom Groups Feature</h3>
+            <p>The Config Console now supports <strong>custom groups</strong> to organize your UI elements better!</p>
+            
+            <h4>Key Features:</h4>
+            <ul>
+                <li><strong>Collapsible Groups</strong> - Click headers to expand/collapse</li>
+                <li><strong>Visual Organization</strong> - Groups have borders and distinct styling</li>
+                <li><strong>Flexible Content</strong> - Add any combination of buttons, inputs, checkboxes, etc.</li>
+                <li><strong>Optional Descriptions</strong> - Add help text to explain group purpose</li>
+            </ul>
+            
+            <h4>Usage:</h4>
+            <p>1. Create a group: <code>console.addGroup('Group Name', { description: 'Optional description', collapsed: false })</code></p>
+            <p>2. Add elements to group: <code>console.addButton('Click Me', onClick, { group: 'Group Name' })</code></p>
+        </div>
+
+        <div class="test-buttons">
+            <button class="test-btn" onclick="showBasicGroups()">Basic Groups</button>
+            <button class="test-btn" onclick="showAdvancedGroups()">Advanced Groups</button>
+            <button class="test-btn" onclick="showGameSettingsExample()">Game Settings Example</button>
+            <button class="test-btn" onclick="showApiConfigExample()">API Config Example</button>
+            <button class="test-btn" onclick="showUserPreferencesExample()">User Preferences</button>
+            <button class="test-btn" onclick="clearConsole()">Clear Console</button>
+        </div>
+    </div>
+
+    <!-- Load Moveable.js -->
+    <script src="https://cdn.jsdelivr.net/npm/moveable@0.30.0/dist/moveable.min.js"></script>
+    
+    <!-- Load Config Console -->
+    <script src="./config-console.js"></script>
+
+    <script>
+        // Initialize Config Console
+        const console = new ConfigConsole({
+            title: 'Groups Demo',
+            position: { x: 100, y: 100 },
+            size: { width: 350, height: 500 },
+            collapsed: false,
+            autoSave: true
+        });
+
+        console.show();
+
+        function showBasicGroups() {
+            console.clear();
+            
+            // Create basic groups
+            console.addGroup('Basic Controls', {
+                description: 'Simple buttons and controls'
+            });
+            
+            console.addGroup('Settings', {
+                description: 'Configuration options',
+                collapsed: false
+            });
+            
+            // Add elements to groups
+            console.addConfigButton('Start Process', () => {
+                console.addLog('Process started', 'info');
+            }, { group: 'Basic Controls' });
+            
+            console.addConfigButton('Stop Process', () => {
+                console.addLog('Process stopped', 'warning');
+            }, { group: 'Basic Controls' });
+            
+            console.addCheckbox('Enable Logging', true, (checked) => {
+                console.addLog(`Logging ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Settings' });
+            
+            console.addCheckbox('Debug Mode', false, (checked) => {
+                console.addLog(`Debug mode ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Settings' });
+        }
+
+        function showAdvancedGroups() {
+            console.clear();
+            
+            // Create collapsible groups
+            console.addGroup('Network Configuration', {
+                description: 'Configure network settings and connections',
+                collapsed: true
+            });
+            
+            console.addGroup('Security Settings', {
+                description: 'Manage authentication and permissions',
+                collapsed: false
+            });
+            
+            console.addGroup('Performance Metrics', {
+                description: 'Real-time system performance data'
+            });
+            
+            // Network group
+            console.addTextInput('Server URL', 'https://api.example.com', (value) => {
+                console.addLog(`Server URL: ${value}`, 'info');
+            }, { group: 'Network Configuration', placeholder: 'Enter server URL...' });
+            
+            console.addTextInput('Port', '8080', (value) => {
+                console.addLog(`Port: ${value}`, 'info');
+            }, { group: 'Network Configuration' });
+            
+            console.addConfigButton('Test Connection', () => {
+                console.addLog('Testing connection...', 'info');
+                setTimeout(() => {
+                    console.addLog('Connection successful!', 'info');
+                }, 1000);
+            }, { group: 'Network Configuration' });
+            
+            // Security group
+            console.addCheckbox('Enable SSL', true, (checked) => {
+                console.addLog(`SSL ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Security Settings' });
+            
+            console.addTextInput('API Key', '', (value) => {
+                console.addLog(`API Key ${value ? 'updated' : 'cleared'}`, 'info');
+            }, { group: 'Security Settings', placeholder: 'Enter API key...' });
+            
+            // Performance group
+            console.addMetric('CPU Usage', '45%', { group: 'Performance Metrics' });
+            console.addMetric('Memory', '2.1 GB', { group: 'Performance Metrics' });
+            console.addMetric('Network I/O', '1.2 MB/s', { group: 'Performance Metrics' });
+        }
+
+        function showGameSettingsExample() {
+            console.clear();
+            
+            // Game-like settings example
+            console.addGroup('Graphics Settings', {
+                description: 'Adjust visual quality and performance'
+            });
+            
+            console.addGroup('Audio Settings', {
+                description: 'Configure sound and music options'
+            });
+            
+            console.addGroup('Controls', {
+                description: 'Customize input and key bindings',
+                collapsed: true
+            });
+            
+            // Graphics
+            console.addRadioGroup('Quality', [
+                { label: 'Low', value: 'low' },
+                { label: 'Medium', value: 'medium', checked: true },
+                { label: 'High', value: 'high' },
+                { label: 'Ultra', value: 'ultra' }
+            ], (value) => {
+                console.addLog(`Graphics quality: ${value}`, 'info');
+            }, { group: 'Graphics Settings' });
+            
+            console.addCheckbox('V-Sync', true, (checked) => {
+                console.addLog(`V-Sync ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Graphics Settings' });
+            
+            console.addCheckbox('Anti-Aliasing', false, (checked) => {
+                console.addLog(`Anti-aliasing ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Graphics Settings' });
+            
+            // Audio
+            console.addCheckbox('Master Volume', true, (checked) => {
+                console.addLog(`Audio ${checked ? 'enabled' : 'muted'}`, 'info');
+            }, { group: 'Audio Settings' });
+            
+            console.addCheckbox('Music', true, (checked) => {
+                console.addLog(`Music ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Audio Settings' });
+            
+            console.addCheckbox('Sound Effects', true, (checked) => {
+                console.addLog(`Sound effects ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Audio Settings' });
+            
+            // Controls
+            console.addConfigButton('Reset to Defaults', () => {
+                console.addLog('Controls reset to defaults', 'warning');
+            }, { group: 'Controls' });
+            
+            console.addConfigButton('Save Profile', () => {
+                console.addLog('Control profile saved', 'info');
+            }, { group: 'Controls' });
+        }
+
+        function showApiConfigExample() {
+            console.clear();
+            
+            // API Configuration example
+            console.addGroup('Authentication', {
+                description: 'API authentication and credentials'
+            });
+            
+            console.addGroup('Endpoints', {
+                description: 'Configure API endpoints and routes',
+                collapsed: true
+            });
+            
+            console.addGroup('Request Settings', {
+                description: 'Timeout and retry configuration'
+            });
+            
+            console.addGroup('Status', {
+                description: 'Current API connection status'
+            });
+            
+            // Authentication
+            console.addTextInput('API Key', '', (value) => {
+                console.addLog(`API key ${value ? 'updated' : 'cleared'}`, 'info');
+            }, { group: 'Authentication', placeholder: 'Enter your API key...' });
+            
+            console.addTextInput('Client ID', '', (value) => {
+                console.addLog(`Client ID: ${value}`, 'info');
+            }, { group: 'Authentication' });
+            
+            console.addRadioGroup('Auth Type', [
+                { label: 'API Key', value: 'apikey', checked: true },
+                { label: 'OAuth2', value: 'oauth2' },
+                { label: 'Bearer Token', value: 'bearer' }
+            ], (value) => {
+                console.addLog(`Auth type: ${value}`, 'info');
+            }, { group: 'Authentication' });
+            
+            // Endpoints
+            console.addTextInput('Base URL', 'https://api.example.com/v1', (value) => {
+                console.addLog(`Base URL: ${value}`, 'info');
+            }, { group: 'Endpoints' });
+            
+            console.addConfigButton('Test Endpoints', () => {
+                console.addLog('Testing API endpoints...', 'info');
+                setTimeout(() => {
+                    console.addLog('All endpoints responding', 'info');
+                }, 1500);
+            }, { group: 'Endpoints' });
+            
+            // Request Settings
+            console.addTextInput('Timeout (ms)', '5000', (value) => {
+                console.addLog(`Timeout: ${value}ms`, 'info');
+            }, { group: 'Request Settings' });
+            
+            console.addCheckbox('Auto Retry', true, (checked) => {
+                console.addLog(`Auto retry ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Request Settings' });
+            
+            // Status
+            console.addMetric('Connection', 'Connected', { group: 'Status' });
+            console.addMetric('Last Request', '2s ago', { group: 'Status' });
+            console.addMetric('Rate Limit', '98/100', { group: 'Status' });
+        }
+
+        function showUserPreferencesExample() {
+            console.clear();
+            
+            // User preferences example
+            console.addGroup('Appearance', {
+                description: 'Customize the look and feel'
+            });
+            
+            console.addGroup('Notifications', {
+                description: 'Manage alerts and notifications',
+                collapsed: true
+            });
+            
+            console.addGroup('Privacy', {
+                description: 'Data and privacy settings'
+            });
+            
+            console.addGroup('Account Actions', {
+                description: 'Manage your account'
+            });
+            
+            // Appearance
+            console.addRadioGroup('Theme', [
+                { label: 'Dark', value: 'dark', checked: true },
+                { label: 'Light', value: 'light' },
+                { label: 'Auto', value: 'auto' }
+            ], (value) => {
+                console.addLog(`Theme: ${value}`, 'info');
+            }, { group: 'Appearance' });
+            
+            console.addCheckbox('Compact Mode', false, (checked) => {
+                console.addLog(`Compact mode ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Appearance' });
+            
+            console.addCheckbox('Show Tooltips', true, (checked) => {
+                console.addLog(`Tooltips ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Appearance' });
+            
+            // Notifications
+            console.addCheckbox('Email Notifications', true, (checked) => {
+                console.addLog(`Email notifications ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Notifications' });
+            
+            console.addCheckbox('Push Notifications', false, (checked) => {
+                console.addLog(`Push notifications ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Notifications' });
+            
+            console.addCheckbox('Sound Alerts', true, (checked) => {
+                console.addLog(`Sound alerts ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Notifications' });
+            
+            // Privacy
+            console.addCheckbox('Analytics', false, (checked) => {
+                console.addLog(`Analytics ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Privacy' });
+            
+            console.addCheckbox('Data Sharing', false, (checked) => {
+                console.addLog(`Data sharing ${checked ? 'enabled' : 'disabled'}`, 'info');
+            }, { group: 'Privacy' });
+            
+            // Account Actions
+            console.addConfigButton('Export Data', () => {
+                console.addLog('Exporting user data...', 'info');
+                setTimeout(() => {
+                    console.addLog('Data export complete', 'info');
+                }, 2000);
+            }, { group: 'Account Actions' });
+            
+            console.addConfigButton('Reset Preferences', () => {
+                console.addLog('Preferences reset to defaults', 'warning');
+            }, { group: 'Account Actions' });
+            
+            console.addConfigButton('Delete Account', () => {
+                console.addLog('Account deletion requested', 'error');
+            }, { group: 'Account Actions' });
+        }
+
+        function clearConsole() {
+            console.clear();
+            console.addLog('Console cleared', 'info');
+        }
+
+        // Start with basic groups demo
+        showBasicGroups();
+    </script>
+</body>
+</html> 

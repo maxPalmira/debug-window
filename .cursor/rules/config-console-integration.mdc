@@ -1,0 +1,135 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Config Console Component Integration Guide
+
+## Overview
+This workspace contains the Config Console component - a draggable, resizable configuration panel for web applications. The component is designed to be used across multiple projects without requiring installation.
+
+## Component Files
+- [config-console.js](mdc:config-console.js) - Main component file (self-contained with embedded CSS)
+- [config-console-loader.js](mdc:config-console-loader.js) - Optional loader utility with error handling
+- [config-console-test.html](mdc:config-console-test.html) - Complete testing suite with all methods
+- [README-CONFIG-CONSOLE.md](mdc:README-CONFIG-CONSOLE.md) - Comprehensive documentation
+
+## Integration in Other Projects
+
+### ✅ Recommended Method: jsDelivr CDN
+```html
+<!-- Required dependency -->
+<script src="https://daybrush.com/moveable/release/latest/dist/moveable.min.js"></script>
+
+<!-- Config Console component -->
+<script src="https://cdn.jsdelivr.net/gh/maxPalmira/config-console@main/config-console.js"></script>
+
+<script>
+    const configConsole = new ConfigConsole({
+        title: 'My Config Panel',
+        position: { x: 100, y: 100 },
+        size: { width: 400, height: 450 }
+    }).init();
+    
+    configConsole.addLog('Component loaded successfully!', 'info');
+</script>
+```
+
+### 🎯 Key Features to Implement
+1. **Logging System**: `addLog(message, type)` - types: 'info', 'warning', 'error'
+2. **Metrics Display**: `addMetric(label, value)` and `updateMetric(label, newValue)`
+3. **Interactive Elements**: 
+   - `addConfigButton(text, onClick)`
+   - `addCheckbox(label, checked, onChange)`
+   - `addRadioGroup(name, options, onChange)`
+   - `addTextInput(label, defaultValue, onChange)`
+4. **State Persistence**: Automatically saves position, size, and visibility to localStorage
+5. **Window Controls**: `show()`, `hide()`, `toggle()`, `destroy()`
+
+### 🔧 Common Integration Patterns
+
+#### React Integration
+```javascript
+import { useEffect, useRef } from 'react';
+
+function useConfigConsole() {
+    const consoleRef = useRef(null);
+    
+    useEffect(() => {
+        if (window.ConfigConsole && !consoleRef.current) {
+            consoleRef.current = new window.ConfigConsole({
+                title: 'React Config Panel'
+            }).init();
+        }
+        
+        return () => {
+            if (consoleRef.current) {
+                consoleRef.current.destroy();
+            }
+        };
+    }, []);
+    
+    return consoleRef.current;
+}
+```
+
+#### Vue.js Integration
+```javascript
+export default {
+    mounted() {
+        this.configConsole = new window.ConfigConsole({
+            title: 'Vue Config Panel'
+        }).init();
+    },
+    beforeDestroy() {
+        if (this.configConsole) {
+            this.configConsole.destroy();
+        }
+    }
+}
+```
+
+#### Node.js/Express Configuration Endpoint
+```javascript
+app.get('/config', (req, res) => {
+    res.send(`
+        <script src="https://daybrush.com/moveable/release/latest/dist/moveable.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/maxPalmira/config-console@main/config-console.js"></script>
+        <script>
+            const configConsole = new ConfigConsole({title: 'Server Config'}).init();
+            configConsole.addLog('Environment: ${process.env.NODE_ENV}', 'info');
+            configConsole.addMetric('Uptime', '${process.uptime()}s');
+        </script>
+    `);
+});
+```
+
+### 📦 Version Management
+- **Development**: Use `@main` for latest features
+- **Production**: Use `@v1.0.2` for stability
+- **Auto-updates**: Component updates automatically when you push to GitHub
+
+### 🚨 Important Notes
+1. **Moveable.js dependency**: Must be loaded before ConfigConsole
+2. **MIME type**: Use jsDelivr CDN (not GitHub raw URLs) for proper JavaScript MIME types
+3. **State persistence**: Component automatically saves/restores state via localStorage with key 'configConsole'
+4. **Single instance**: Destroy existing instances before creating new ones
+5. **DOM ready**: Initialize after DOM is loaded or in window.onload
+
+### 🧪 Testing Setup
+Reference [config-console-test.html](mdc:config-console-test.html) for complete testing examples with all component methods organized by functionality.
+
+### 🔗 Quick Reference
+- **Repository**: https://github.com/maxPalmira/config-console
+- **CDN URL**: https://cdn.jsdelivr.net/gh/maxPalmira/config-console@main/config-console.js
+- **File Size**: ~35KB (self-contained with CSS)
+- **Dependencies**: Moveable.js only
+- **Browser Support**: Modern browsers with ES6+ support
+- **Default Storage Key**: 'configConsole' (configurable)
+
+### 🎨 Use Cases
+- **Application Settings**: Configuration panels for user preferences
+- **Developer Tools**: Development environment controls and monitoring
+- **System Monitoring**: Real-time metrics and status displays
+- **Admin Panels**: Administrative controls and system management
+- **Debug Interfaces**: Runtime debugging and diagnostic tools

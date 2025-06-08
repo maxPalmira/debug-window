@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config Console Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Dark mode (default) */
+        body {
+            background: #0a0a0a;
+            color: #ffffff;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.3) 70%, rgba(0, 0, 0, 0.7) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Light mode */
+        body.light-mode {
+            background: #f8f9fa;
+            color: #2d3748;
+        }
+
+        body.light-mode::before {
+            background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.05) 70%, rgba(0, 0, 0, 0.15) 100%);
+        }
+
+        /* Abstract background grid */
+        .abstract-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        #grid-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .grid-line {
+            stroke-width: 0.5;
+            opacity: 0.15;
+            transition: opacity 0.3s ease;
+        }
+
+        body.light-mode .grid-line {
+            opacity: 0.25;
+        }
+
+        /* Mode toggle */
+        .mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .mode-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        body.light-mode .mode-toggle {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.2);
+            color: #2d3748;
+        }
+
+        body.light-mode .mode-toggle:hover {
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .mode-icon {
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .mode-toggle:hover .mode-icon {
+            transform: rotate(180deg);
+        }
+
+
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .welcome {
+                padding: 20px 25px;
+                margin: 20px;
+            }
+            
+            .welcome h1 {
+                font-size: 2rem;
+            }
+            
+            .welcome p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mode Toggle -->
+    <div class="mode-toggle" onclick="toggleMode()">
+        <span class="mode-icon">🌙</span>
+        <span class="mode-text">Dark</span>
+    </div>
+
+    <!-- Abstract Background Grid -->
+    <div class="abstract-bg" id="abstractBg">
+        <svg id="grid-svg" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="gridGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#007acc;stop-opacity:0.8" />
+                    <stop offset="100%" style="stop-color:#4a9eff;stop-opacity:0.8" />
+                </linearGradient>
+                <linearGradient id="gridGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#4a9eff;stop-opacity:0.8" />
+                    <stop offset="100%" style="stop-color:#007acc;stop-opacity:0.8" />
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+
+    <!-- Load Moveable.js -->
+    <script src="https://cdn.jsdelivr.net/npm/moveable@0.30.0/dist/moveable.min.js"></script>
+    
+    <!-- Load Config Console locally -->
+    <script src="./config-console.js"></script>
+
+    <script>
+        let configConsole = null;
+        let isDarkMode = true;
+        let gridLines = [];
+        
+
+        // Generate simple static grid
+        function generateGrid() {
+            const svg = document.getElementById('grid-svg');
+            
+            // Clear existing grid
+            while (svg.children.length > 1) { // Keep defs element
+                svg.removeChild(svg.lastChild);
+            }
+            gridLines = [];
+            
+            const cellSize = 67;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            // Create vertical lines
+            for (let x = 0; x <= width; x += cellSize) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x);
+                line.setAttribute('y1', 0);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', height);
+                line.setAttribute('class', 'grid-line');
+                line.setAttribute('stroke', '#007acc');
+                svg.appendChild(line);
+                gridLines.push(line);
+            }
+            
+            // Create horizontal lines
+            for (let y = 0; y <= height; y += cellSize) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', 0);
+                line.setAttribute('y1', y);
+                line.setAttribute('x2', width);
+                line.setAttribute('y2', y);
+                line.setAttribute('class', 'grid-line');
+                line.setAttribute('stroke', '#4a9eff');
+                svg.appendChild(line);
+                gridLines.push(line);
+            }
+        }
+
+        // Toggle light/dark mode
+        function toggleMode() {
+            isDarkMode = !isDarkMode;
+            const body = document.body;
+            const modeIcon = document.querySelector('.mode-icon');
+            const modeText = document.querySelector('.mode-text');
+            
+            if (isDarkMode) {
+                body.classList.remove('light-mode');
+                modeIcon.textContent = '🌙';
+                modeText.textContent = 'Dark';
+            } else {
+                body.classList.add('light-mode');
+                modeIcon.textContent = '☀️';
+                modeText.textContent = 'Light';
+            }
+            
+            if (configConsole) {
+                configConsole.addLog(`Switched to ${isDarkMode ? 'dark' : 'light'} mode`, 'info');
+            }
+        }
+
+        // Initialize Config Console
+        function initConfigConsole() {
+            configConsole = new ConfigConsole({
+                title: 'Config Console Playground',
+                position: { x: window.innerWidth / 2 - 175, y: window.innerHeight / 2 - 200 },
+                size: { width: 350, height: 400 },
+                collapsed: false,
+                autoSave: true
+            }).init();
+            
+            addDemoContent();
+            configConsole.show();
+            console.log('ConfigConsole initialized successfully!');
+        }
+
+        // Add demo content to showcase features
+        function addDemoContent() {
+            // Display Settings group
+            configConsole.addGroup('Display Settings', {
+                description: 'Customize the playground appearance'
+            });
+            
+            configConsole.addCheckbox('Dark Mode', isDarkMode, (checked) => {
+                if (checked !== isDarkMode) {
+                    toggleMode();
+                }
+            }, { group: 'Display Settings' });
+            
+            configConsole.addCheckbox('Show Grid', true, (checked) => {
+                const bg = document.getElementById('abstractBg');
+                if (checked) {
+                    bg.style.display = 'block';
+                    generateGrid();
+                } else {
+                    bg.style.display = 'none';
+                }
+                configConsole.addLog(`Grid ${checked ? 'shown' : 'hidden'}`, 'info');
+            }, { group: 'Display Settings' });
+            
+            configConsole.addConfigButton('Regenerate Grid', () => {
+                generateGrid();
+                configConsole.addLog('Grid regenerated', 'info');
+            }, { group: 'Display Settings' });
+            
+            // Demo Controls group
+            configConsole.addGroup('Demo Controls', {
+                description: 'Interactive examples and demos',
+                collapsed: true
+            });
+            
+            configConsole.addRadioGroup('Grid Intensity', [
+                { label: 'Subtle', value: 'subtle' },
+                { label: 'Medium', value: 'medium', checked: true },
+                { label: 'Vivid', value: 'vivid' }
+            ], (value) => {
+                // Adjust grid line opacity based on selection
+                const opacity = value === 'subtle' ? 0.08 : value === 'medium' ? 0.15 : 0.3;
+                gridLines.forEach(line => {
+                    line.style.opacity = opacity;
+                });
+                configConsole.addLog(`Grid intensity set to ${value}`, 'info');
+            }, { group: 'Demo Controls' });
+            
+            configConsole.addTextInput('Custom Message', 'Hello Grid!', (value) => {
+                configConsole.addLog(`Custom message: ${value}`, 'info');
+            }, { 
+                group: 'Demo Controls',
+                placeholder: 'Enter your message...'
+            });
+            
+            // System Info group
+            configConsole.addGroup('System Info', {
+                description: 'Browser and system information'
+            });
+            
+            configConsole.addMetric('Browser', navigator.userAgent.split(' ')[0], { group: 'System Info' });
+            configConsole.addMetric('Screen', `${screen.width}x${screen.height}`, { group: 'System Info' });
+            configConsole.addMetric('Viewport', `${window.innerWidth}x${window.innerHeight}`, { group: 'System Info' });
+            configConsole.addMetric('Grid Lines', gridLines.length, { group: 'System Info' });
+            configConsole.addMetric('Cell Size', '67x67px', { group: 'System Info' });
+            
+            // Add initial logs
+            configConsole.addLog('Config Console initialized with simple grid!', 'info');
+            configConsole.addLog('Clean background with subtle vignette effect', 'info');
+            configConsole.addLog('Perfect for a playground environment', 'info');
+            
+            // Update metrics periodically
+            setInterval(() => {
+                configConsole.updateMetric('Viewport', `${window.innerWidth}x${window.innerHeight}`);
+                configConsole.updateMetric('Grid Lines', gridLines.length);
+            }, 2000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Toggle mode with Ctrl/Cmd + Shift + T
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
+                e.preventDefault();
+                toggleMode();
+            }
+            
+            // Toggle console with Ctrl/Cmd + `
+            if ((e.ctrlKey || e.metaKey) && e.key === '`') {
+                e.preventDefault();
+                if (configConsole) {
+                    if (configConsole.isHidden()) {
+                        configConsole.show();
+                    } else {
+                        configConsole.hide();
+                    }
+                }
+            }
+            
+            // Regenerate grid with R key
+            if (e.key === 'r' || e.key === 'R') {
+                generateGrid();
+                if (configConsole) {
+                    configConsole.addLog('Grid regenerated with R key', 'info');
+                }
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (configConsole && !configConsole.isHidden()) {
+                const newX = Math.max(50, window.innerWidth / 2 - 175);
+                const newY = Math.max(50, window.innerHeight / 2 - 200);
+                configConsole.setPosition(newX, newY);
+            }
+            
+            // Regenerate grid on resize to fit new dimensions
+            if (gridLines.length > 0) {
+                generateGrid();
+            }
+        });
+
+
+
+        // Initialize everything when page loads
+        window.addEventListener('load', () => {
+            generateGrid();
+            
+            // Wait for all scripts to load, then initialize ConfigConsole
+            setTimeout(() => {
+                try {
+                    if (typeof ConfigConsole !== 'undefined') {
+                        initConfigConsole();
+                    } else {
+                        console.error('ConfigConsole class not found - check if config-console.js loaded correctly');
+                    }
+                } catch (error) {
+                    console.error('Error initializing ConfigConsole:', error);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

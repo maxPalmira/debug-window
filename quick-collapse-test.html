@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collapse Test</title>
+    <style>
+        body { background: #000; color: white; font-family: monospace; padding: 20px; }
+        button { background: #007acc; color: white; border: none; padding: 10px 20px; 
+                border-radius: 5px; cursor: pointer; margin: 5px; font-size: 16px; }
+        .status { margin: 10px 0; padding: 10px; background: #222; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔄 Collapse Test</h1>
+    
+    <div class="status">
+        <button onclick="testCollapse()">🧪 Test Collapse</button>
+        <button onclick="resetConsole()">🔄 Reset</button>
+    </div>
+    
+    <div id="results" class="status">Ready...</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/moveable@0.30.0/dist/moveable.min.js"></script>
+    <script src="./config-console.js"></script>
+    
+    <script>
+        let console;
+        
+        function resetConsole() {
+            if (console) console.destroy();
+            
+            console = new ConfigConsole({
+                title: 'Collapse Test',
+                position: { x: 50, y: 50 },
+                size: { width: 300, height: 200 }
+            }).init();
+            
+            document.getElementById('results').innerHTML = 'Console reset to 300x200px';
+        }
+        
+        async function testCollapse() {
+            const element = console.getElement();
+            const header = element.querySelector('.config-header');
+            
+            // Step 1: Measure expanded state
+            const expandedHeight = element.offsetHeight;
+            const headerHeight = header.offsetHeight;
+            
+            document.getElementById('results').innerHTML = `
+                <strong>Step 1 - Expanded:</strong><br>
+                Total height: ${expandedHeight}px<br>
+                Header height: ${headerHeight}px<br>
+                Expected collapsed height: ≤${headerHeight + 5}px
+            `;
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Step 2: Collapse
+            console.toggleCollapse();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            const collapsedHeight = element.offsetHeight;
+            const hasCollapsedClass = element.classList.contains('collapsed');
+            const contentDisplay = window.getComputedStyle(element.querySelector('.config-content')).display;
+            const isProperlyCollapsed = collapsedHeight <= headerHeight + 5;
+            
+            document.getElementById('results').innerHTML = `
+                <strong>Step 2 - Collapsed:</strong><br>
+                Total height: ${collapsedHeight}px<br>
+                Header height: ${headerHeight}px<br>
+                Has collapsed class: ${hasCollapsedClass}<br>
+                Content display: ${contentDisplay}<br>
+                Style height: ${element.style.height}<br>
+                Min height: ${element.style.minHeight}<br>
+                <strong>Result: ${isProperlyCollapsed ? '✅ PASS' : '❌ FAIL'}</strong>
+            `;
+            
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Step 3: Expand back
+            console.toggleCollapse();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            const finalHeight = element.offsetHeight;
+            const isExpanded = !element.classList.contains('collapsed');
+            const heightRestored = Math.abs(finalHeight - expandedHeight) <= 2;
+            
+            document.getElementById('results').innerHTML += `
+                <br><br><strong>Step 3 - Expanded:</strong><br>
+                Final height: ${finalHeight}px<br>
+                Original height: ${expandedHeight}px<br>
+                Is expanded: ${isExpanded}<br>
+                <strong>Result: ${heightRestored ? '✅ PASS' : '❌ FAIL'}</strong>
+            `;
+        }
+        
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof ConfigConsole !== 'undefined') {
+                    resetConsole();
+                } else {
+                    document.getElementById('results').innerHTML = '❌ ConfigConsole not loaded';
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

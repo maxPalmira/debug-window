@@ -1,10 +1,10 @@
 /*!
- * DebugWindow - A draggable, resizable debug panel for web applications
+ * ConfigConsole - A draggable, resizable configuration panel for web applications
  * Version: 1.0.2
  * Updated: Added text input fields and collapsible window functionality
  * Features: Draggable by icon, resizable, localStorage state persistence, multiple UI elements, collapsible
  * Dependencies: Moveable.js (must be loaded separately)
- * Usage: const debugWindow = new DebugWindow(options).init();
+ * Usage: const configConsole = new ConfigConsole(options).init();
  */
 
 (function(global) {
@@ -12,15 +12,15 @@
 
     // Inject CSS styles if not already present
     function injectStyles() {
-        if (document.getElementById('debug-window-styles')) {
+        if (document.getElementById('config-console-styles')) {
             return; // Styles already injected
         }
 
         const style = document.createElement('style');
-        style.id = 'debug-window-styles';
+        style.id = 'config-console-styles';
         style.textContent = `
-/* DebugWindow Embedded Styles - Compact Version */
-.debug-window {
+/* ConfigConsole Embedded Styles - High Specificity Version */
+.config-console {
     position: absolute;
     background: #2d2d2d;
     border: 1px solid #555;
@@ -36,8 +36,8 @@
     color: #ffffff;
 }
 
-.debug-header {
-    background: #404040;
+.config-console .config-header {
+    background: #404040 !important;
     padding: 6px 10px;
     display: flex;
     justify-content: space-between;
@@ -46,8 +46,8 @@
     flex-shrink: 0;
 }
 
-.debug-title {
-    font-size: 12px;
+.config-console .config-title {
+    font-size: 12px !important;
     font-weight: 500;
     color: #ffffff;
     display: flex;
@@ -55,8 +55,8 @@
     gap: 12px;
 }
 
-.drag-icon {
-    cursor: move;
+.config-console .drag-icon {
+    cursor: move !important;
     color: #cccccc;
     font-size: 16px;
     font-weight: bold;
@@ -67,18 +67,18 @@
     letter-spacing: -2px;
 }
 
-.drag-icon:hover {
-    background: rgba(255, 255, 255, 0.15);
+.config-console .drag-icon:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
     color: #ffffff;
     transform: scale(1.1);
 }
 
-.debug-controls {
+.config-controls {
     display: flex;
     gap: 4px;
 }
 
-.debug-btn {
+.config-btn {
     background: transparent;
     border: none;
     color: #cccccc;
@@ -90,12 +90,12 @@
     font-weight: bold;
 }
 
-.debug-btn:hover {
+.config-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #ffffff;
 }
 
-.debug-content {
+.config-content {
     flex: 1;
     padding: 8px;
     overflow-y: auto;
@@ -103,11 +103,11 @@
 }
 
 /* Sections */
-.debug-section {
+.config-section {
     margin-bottom: 12px;
 }
 
-.debug-section:last-child {
+.config-section:last-child {
     margin-bottom: 0;
 }
 
@@ -119,6 +119,71 @@
     letter-spacing: 0.5px;
     border-bottom: 1px solid #444;
     padding-bottom: 3px;
+}
+
+/* Custom Groups */
+.config-console .config-group {
+    background: #353535;
+    border: 1px solid #555;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.config-console .config-group.collapsed .group-content {
+    display: none !important;
+}
+
+.config-console .group-header {
+    background: #404040;
+    padding: 8px 12px;
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid #555;
+}
+
+.config-console .group-header:hover {
+    background: #454545 !important;
+}
+
+.config-console .group-title {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.config-console .group-toggle {
+    color: #cccccc;
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+.config-console .config-group.collapsed .group-toggle {
+    transform: rotate(-90deg);
+}
+
+.config-console .group-content {
+    padding: 10px 12px;
+}
+
+.config-console .group-content > * {
+    margin-bottom: 8px;
+}
+
+.config-console .group-content > *:last-child {
+    margin-bottom: 0;
+}
+
+.config-console .group-description {
+    font-size: 9px !important;
+    color: #aaaaaa !important;
+    margin-bottom: 10px !important;
+    line-height: 1.4;
 }
 
 /* Logs */
@@ -382,15 +447,7 @@
     font-style: italic;
 }
 
-/* Collapsed State */
-.debug-window.collapsed .debug-content {
-    display: none;
-}
 
-.debug-window.collapsed {
-    height: auto !important;
-    min-height: auto !important;
-}
 
 /* Moveable.js Styling */
 .moveable-control-box .moveable-control {
@@ -417,41 +474,50 @@
 }
 
 /* Scrollbar Styling */
-.debug-content::-webkit-scrollbar {
+.config-content::-webkit-scrollbar {
     width: 6px;
 }
 
-.debug-content::-webkit-scrollbar-track {
+.config-content::-webkit-scrollbar-track {
     background: #1a1a1a;
 }
 
-.debug-content::-webkit-scrollbar-thumb {
+.config-content::-webkit-scrollbar-thumb {
     background: #555;
     border-radius: 3px;
 }
 
-.debug-content::-webkit-scrollbar-thumb:hover {
+.config-content::-webkit-scrollbar-thumb:hover {
     background: #666;
 }
 
 /* Hidden State */
-.debug-window.hidden {
+.config-console.hidden {
     display: none;
+}
+
+/* Collapsed State */
+.config-console.collapsed {
+    min-height: auto !important;
+}
+
+.config-console.collapsed .config-content {
+    display: none !important;
 }
 `;
 
         document.head.appendChild(style);
     }
 
-    class DebugWindow {
+    class ConfigConsole {
         constructor(options = {}) {
             this.options = {
-                title: options.title || 'Debug Info',
+                title: options.title || 'Config Console',
                 position: options.position || { x: 100, y: 100 },
                 size: options.size || { width: 300, height: 400 },
                 visible: options.visible !== false,
                 collapsed: options.collapsed || false,
-                storageKey: options.storageKey || 'debugWindow'
+                storageKey: options.storageKey || 'configConsole'
             };
             
             this.defaultOptions = { ...this.options };
@@ -460,6 +526,7 @@
             this.isVisible = this.options.visible;
             this.isCollapsed = this.options.collapsed;
             this.sections = new Map();
+            this.groups = new Map();
             this.logCount = 0;
             this.radioGroups = new Map();
             
@@ -472,7 +539,7 @@
         generateHTML() {
             // Create main window element
             this.window = document.createElement('div');
-            this.window.className = 'debug-window';
+            this.window.className = 'config-console';
             this.window.style.left = `${this.options.position.x}px`;
             this.window.style.top = `${this.options.position.y}px`;
             this.window.style.width = `${this.options.size.width}px`;
@@ -488,10 +555,10 @@
             
             // Create header
             const header = document.createElement('div');
-            header.className = 'debug-header';
+            header.className = 'config-header';
             
             const titleContainer = document.createElement('div');
-            titleContainer.className = 'debug-title';
+            titleContainer.className = 'config-title';
             
             const dragIcon = document.createElement('span');
             dragIcon.className = 'drag-icon';
@@ -506,21 +573,19 @@
             titleContainer.appendChild(title);
             
             const controls = document.createElement('div');
-            controls.className = 'debug-controls';
+            controls.className = 'config-controls';
             
             // Minimize/collapse button
             const minimizeBtn = document.createElement('button');
-            minimizeBtn.className = 'debug-btn';
+            minimizeBtn.className = 'config-btn minimize-btn';
             minimizeBtn.innerHTML = '−';
             minimizeBtn.title = 'Minimize';
-            minimizeBtn.addEventListener('click', () => this.toggleCollapse());
             
             // Close button
             const closeBtn = document.createElement('button');
-            closeBtn.className = 'debug-btn';
+            closeBtn.className = 'config-btn close-btn';
             closeBtn.innerHTML = '×';
             closeBtn.title = 'Close';
-            closeBtn.addEventListener('click', () => this.hide());
             
             controls.appendChild(minimizeBtn);
             controls.appendChild(closeBtn);
@@ -530,7 +595,7 @@
             
             // Create content area
             const content = document.createElement('div');
-            content.className = 'debug-content';
+            content.className = 'config-content';
             
             this.window.appendChild(header);
             this.window.appendChild(content);
@@ -545,7 +610,7 @@
         init() {
             // Check for Moveable dependency
             if (typeof Moveable === 'undefined') {
-                console.error('DebugWindow requires Moveable.js library. Please include it before initializing DebugWindow.');
+                console.error('ConfigConsole requires Moveable.js library. Please include it before initializing ConfigConsole.');
                 console.error('Add this to your HTML: <script src="https://daybrush.com/moveable/release/latest/dist/moveable.min.js"></script>');
                 return this;
             }
@@ -556,6 +621,9 @@
             // Add to DOM
             document.body.appendChild(this.window);
             
+            // Setup event delegation for header controls
+            this.setupEventDelegation();
+            
             // Setup Moveable
             this.setupMoveable();
             
@@ -565,7 +633,52 @@
             return this;
         }
         
+        refreshMoveable() {
+            // Refresh Moveable instance to fix any sync issues
+            if (this.moveable && this.window) {
+                this.setupMoveable();
+                this.setupAutoSave();
+            }
+            return this;
+        }
+        
+        setupEventDelegation() {
+            // Use event delegation for header controls to ensure they always work
+            this.window.addEventListener('click', (e) => {
+                // Handle minimize button
+                if (e.target.classList.contains('minimize-btn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleCollapse();
+                }
+                
+                // Handle close button  
+                if (e.target.classList.contains('close-btn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.hide();
+                }
+                
+                // Handle group header clicks
+                if (e.target.classList.contains('group-header') || e.target.parentElement?.classList.contains('group-header')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Find the group container
+                    let groupContainer = e.target.closest('.config-group');
+                    if (groupContainer) {
+                        groupContainer.classList.toggle('collapsed');
+                    }
+                }
+            });
+        }
+        
         setupMoveable() {
+            // Destroy existing moveable if it exists
+            if (this.moveable) {
+                this.moveable.destroy();
+            }
+            
             this.moveable = new Moveable(document.body, {
                 target: this.window,
                 draggable: true,
@@ -589,6 +702,7 @@
             this.moveable.on("drag", ({ target, left, top }) => {
                 target.style.left = `${left}px`;
                 target.style.top = `${top}px`;
+                this.options.position = { x: left, y: top };
             });
             
             // Handle resize events
@@ -601,6 +715,7 @@
                 
                 target.style.width = `${newWidth}px`;
                 target.style.height = `${newHeight}px`;
+                this.options.size = { width: newWidth, height: newHeight };
             });
         }
         
@@ -735,9 +850,11 @@
             this.isVisible = true;
             this.window.classList.remove('hidden');
             
-            // Update moveable target visibility
+            // Update moveable target visibility with small delay to ensure DOM is ready
             if (this.moveable) {
-                this.moveable.updateTarget();
+                setTimeout(() => {
+                    this.moveable.updateTarget();
+                }, 10);
             }
             
             // Auto-save visibility state
@@ -767,10 +884,34 @@
         
         toggleCollapse() {
             this.isCollapsed = !this.isCollapsed;
+            
             if (this.isCollapsed) {
+                // Store current height before collapsing (use options.size.height, not style)
+                this._originalHeight = this.options.size.height;
+                
+                // Get header height before adding collapsed class
+                const headerHeight = this.header.offsetHeight || 40; // fallback to 40px
+                
                 this.window.classList.add('collapsed');
+                this.window.style.height = `${headerHeight}px`;
+                this.window.style.minHeight = `${headerHeight}px`;
+                
+                // Force layout recalculation
+                this.window.offsetHeight;
+                // Don't update options.size.height when collapsed - keep the intended size
             } else {
                 this.window.classList.remove('collapsed');
+                
+                // Restore to the stored height (which may have been updated by setSize while collapsed)
+                const restoreHeight = this._originalHeight || this.defaultOptions.size.height;
+                this.window.style.height = `${restoreHeight}px`;
+                this.window.style.minHeight = '200px'; // restore default min-height
+                this.options.size.height = restoreHeight;
+            }
+            
+            // Update moveable to recognize the size change
+            if (this.moveable) {
+                this.moveable.updateTarget();
             }
             
             // Auto-save collapsed state
@@ -801,7 +942,7 @@
             }
             
             const section = document.createElement('div');
-            section.className = 'debug-section';
+            section.className = 'config-section';
             
             const title = document.createElement('div');
             title.className = 'section-title';
@@ -872,27 +1013,103 @@
                 }
             }
             
-            return this;
+                    return this;
+    }
+
+    // Custom Group Methods
+    addGroup(groupName, options = {}) {
+        const {
+            description = '',
+            collapsed = false,
+            section = 'Groups'
+        } = options;
+
+        const sectionContainer = this.getOrCreateSection(section);
+        
+        // Create group container
+        const groupContainer = document.createElement('div');
+        groupContainer.className = 'config-group';
+        if (collapsed) {
+            groupContainer.classList.add('collapsed');
         }
         
-        addConfigButton(text, onClick, options = {}) {
-            const sectionName = options.section || 'Controls';
-            const section = this.getOrCreateSection(sectionName);
-            
+        // Create group header
+        const header = document.createElement('div');
+        header.className = 'group-header';
+        
+        const title = document.createElement('div');
+        title.className = 'group-title';
+        title.textContent = groupName;
+        
+        const toggle = document.createElement('div');
+        toggle.className = 'group-toggle';
+        toggle.innerHTML = '▼';
+        
+        header.appendChild(title);
+        header.appendChild(toggle);
+        
+        // Create group content
+        const content = document.createElement('div');
+        content.className = 'group-content';
+        
+        // Add description if provided
+        if (description) {
+            const desc = document.createElement('div');
+            desc.className = 'group-description';
+            desc.textContent = description;
+            content.appendChild(desc);
+        }
+        
+        // Collapse/expand functionality is handled by event delegation in setupEventDelegation()
+        
+        groupContainer.appendChild(header);
+        groupContainer.appendChild(content);
+        sectionContainer.appendChild(groupContainer);
+        
+        // Store group reference
+        this.groups.set(groupName, {
+            container: groupContainer,
+            content: content,
+            collapsed: collapsed
+        });
+        
+        return this;
+    }
+
+    getGroup(groupName) {
+        return this.groups.get(groupName);
+    }
+
+    addToGroup(groupName, element) {
+        const group = this.getGroup(groupName);
+        if (group) {
+            group.content.appendChild(element);
+        } else {
+            console.warn(`Group "${groupName}" not found. Creating default group.`);
+            this.addGroup(groupName);
+            this.addToGroup(groupName, element);
+        }
+        return this;
+    }
+
+    addConfigButton(text, onClick, options = {}) {
             const button = document.createElement('button');
             button.className = 'config-button';
             button.textContent = text;
             button.addEventListener('click', onClick);
             
-            section.appendChild(button);
+            if (options.group) {
+                this.addToGroup(options.group, button);
+            } else {
+                const sectionName = options.section || 'Controls';
+                const section = this.getOrCreateSection(sectionName);
+                section.appendChild(button);
+            }
             
             return this;
         }
         
         addCheckbox(label, checked = false, onChange, options = {}) {
-            const sectionName = options.section || 'Settings';
-            const section = this.getOrCreateSection(sectionName);
-            
             const container = document.createElement('div');
             container.className = 'checkbox-item';
             
@@ -916,14 +1133,18 @@
             container.appendChild(checkbox);
             container.appendChild(labelElement);
             
-            section.appendChild(container);
+            if (options.group) {
+                this.addToGroup(options.group, container);
+            } else {
+                const sectionName = options.section || 'Settings';
+                const section = this.getOrCreateSection(sectionName);
+                section.appendChild(container);
+            }
             
             return this;
         }
         
-        addRadioGroup(groupName, options, onChange) {
-            const section = this.getOrCreateSection('Settings');
-            
+        addRadioGroup(groupName, options, onChange, groupOptions = {}) {
             const groupContainer = document.createElement('div');
             groupContainer.className = 'radio-group';
             
@@ -960,16 +1181,19 @@
                 groupContainer.appendChild(container);
             });
             
-            section.appendChild(groupContainer);
+            if (groupOptions.group) {
+                this.addToGroup(groupOptions.group, groupContainer);
+            } else {
+                const section = this.getOrCreateSection('Settings');
+                section.appendChild(groupContainer);
+            }
+            
             this.radioGroups.set(groupName, groupContainer);
             
             return this;
         }
         
         addMetric(label, value, options = {}) {
-            const sectionName = options.section || 'Metrics';
-            const section = this.getOrCreateSection(sectionName);
-            
             const metric = document.createElement('div');
             metric.className = 'metric-item';
             metric.dataset.label = label;
@@ -985,15 +1209,18 @@
             metric.appendChild(labelElement);
             metric.appendChild(valueElement);
             
-            section.appendChild(metric);
+            if (options.group) {
+                this.addToGroup(options.group, metric);
+            } else {
+                const sectionName = options.section || 'Metrics';
+                const section = this.getOrCreateSection(sectionName);
+                section.appendChild(metric);
+            }
             
             return this;
         }
         
         addTextInput(label, value = '', onChange, options = {}) {
-            const sectionName = options.section || 'Inputs';
-            const section = this.getOrCreateSection(sectionName);
-            
             const container = document.createElement('div');
             container.className = 'input-item';
             
@@ -1020,7 +1247,13 @@
             container.appendChild(labelElement);
             container.appendChild(input);
             
-            section.appendChild(container);
+            if (options.group) {
+                this.addToGroup(options.group, container);
+            } else {
+                const sectionName = options.section || 'Inputs';
+                const section = this.getOrCreateSection(sectionName);
+                section.appendChild(container);
+            }
             
             return this;
         }
@@ -1055,13 +1288,32 @@
             this.window.style.top = `${y}px`;
             this.options.position = { x, y };
             
+            // Update Moveable if it exists
+            if (this.moveable) {
+                this.moveable.updateTarget();
+            }
+            
             return this;
         }
         
         setSize(width, height) {
-            this.window.style.width = `${width}px`;
-            this.window.style.height = `${height}px`;
             this.options.size = { width, height };
+            
+            // Always update width
+            this.window.style.width = `${width}px`;
+            
+            if (this.isCollapsed) {
+                // If collapsed, update the stored height but don't change visual height
+                this._originalHeight = height;
+            } else {
+                // If not collapsed, update visual height immediately
+                this.window.style.height = `${height}px`;
+            }
+            
+            // Update Moveable if it exists
+            if (this.moveable) {
+                this.moveable.updateTarget();
+            }
             
             return this;
         }
@@ -1069,6 +1321,7 @@
         clear() {
             this.content.innerHTML = '';
             this.sections.clear();
+            this.groups.clear();
             this.radioGroups.clear();
             this.logCount = 0;
             
@@ -1181,13 +1434,24 @@
         isHidden() {
             return !this.isVisible;
         }
+        
+        // Test/Debug method to verify functionality
+        testControls() {
+            console.log('Testing Config Console controls...');
+            console.log('Minimize button:', this.window.querySelector('.minimize-btn'));
+            console.log('Close button:', this.window.querySelector('.close-btn'));
+            console.log('Moveable instance:', this.moveable);
+            console.log('Current position:', this.options.position);
+            console.log('Current size:', this.options.size);
+            return this;
+        }
     }
 
     // Export to global scope
     if (typeof module !== 'undefined' && module.exports) {
-        module.exports = DebugWindow;
+        module.exports = ConfigConsole;
     } else {
-        global.DebugWindow = DebugWindow;
+        global.ConfigConsole = ConfigConsole;
     }
 
 })(typeof window !== 'undefined' ? window : global); 

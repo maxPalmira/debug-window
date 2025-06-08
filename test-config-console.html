@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConfigConsole Tests</title>
+    <style>
+        body {
+            background: #000;
+            color: white;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .test-pass {
+            background: #0a4d0a;
+            border: 1px solid #0f5f0f;
+        }
+        .test-fail {
+            background: #4d0a0a;
+            border: 1px solid #5f0f0f;
+        }
+        .test-section {
+            margin: 20px 0;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+    </style>
+</head>
+<body>
+    <h1>ConfigConsole Test Suite</h1>
+    <div id="test-results"></div>
+    
+    <div class="test-section">
+        <h3>Manual Test Controls</h3>
+        <button onclick="runAllTests()">🧪 Run All Tests</button>
+        <button onclick="testConsole.destroy(); initTestConsole()">🔄 Reset Console</button>
+        <button onclick="testResizeCollapseSequence()">🔧 Test Resize-Collapse Sequence</button>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/moveable@0.30.0/dist/moveable.min.js"></script>
+    <script src="./config-console.js"></script>
+    
+    <script>
+        let testConsole;
+        let testResults = [];
+        
+        function logTest(name, passed, details = '') {
+            const result = { name, passed, details, timestamp: new Date().toLocaleTimeString() };
+            testResults.push(result);
+            updateTestDisplay();
+            console.log(`${passed ? '✅' : '❌'} ${name}${details ? ': ' + details : ''}`);
+        }
+        
+        function updateTestDisplay() {
+            const container = document.getElementById('test-results');
+            container.innerHTML = testResults.map(result => `
+                <div class="test-result ${result.passed ? 'test-pass' : 'test-fail'}">
+                    <strong>${result.passed ? '✅' : '❌'} ${result.name}</strong>
+                    <br><small>${result.timestamp}</small>
+                    ${result.details ? `<br><span style="opacity: 0.8;">${result.details}</span>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        function initTestConsole() {
+            if (testConsole) {
+                testConsole.destroy();
+            }
+            
+            testConsole = new ConfigConsole({
+                title: 'Test Console',
+                position: { x: 50, y: 50 },
+                size: { width: 300, height: 200 }
+            }).init();
+            
+            testConsole.addLog('Test console initialized', 'info');
+            return testConsole;
+        }
+        
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        async function testBasicInitialization() {
+            try {
+                const console = initTestConsole();
+                const element = console.getElement();
+                
+                logTest('Basic Initialization', 
+                    element && element.classList.contains('config-console'),
+                    'Console element created and has correct class'
+                );
+                
+                logTest('Console Visibility', 
+                    !console.isHidden(),
+                    'Console is visible after initialization'
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Basic Initialization', false, error.message);
+                return false;
+            }
+        }
+        
+        async function testShowHide() {
+            try {
+                const console = testConsole;
+                
+                // Test hide
+                console.hide();
+                await sleep(100);
+                logTest('Hide Functionality', 
+                    console.isHidden() && console.getElement().classList.contains('hidden'),
+                    'Console hidden and has hidden class'
+                );
+                
+                // Test show
+                console.show();
+                await sleep(100);
+                logTest('Show Functionality', 
+                    !console.isHidden() && !console.getElement().classList.contains('hidden'),
+                    'Console shown and hidden class removed'
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Show/Hide', false, error.message);
+                return false;
+            }
+        }
+        
+        async function testCollapseExpand() {
+            try {
+                const console = testConsole;
+                const element = console.getElement();
+                
+                // Get initial height
+                const initialHeight = element.offsetHeight;
+                
+                // Test collapse
+                console.toggleCollapse();
+                await sleep(200);
+                
+                const collapsedHeight = element.offsetHeight;
+                const hasCollapsedClass = element.classList.contains('collapsed');
+                const contentHidden = window.getComputedStyle(element.querySelector('.config-content')).display === 'none';
+                
+                logTest('Collapse Functionality', 
+                    hasCollapsedClass && contentHidden && collapsedHeight < initialHeight,
+                    `Height: ${initialHeight}px → ${collapsedHeight}px, Content hidden: ${contentHidden}`
+                );
+                
+                // Test expand
+                console.toggleCollapse();
+                await sleep(200);
+                
+                const expandedHeight = element.offsetHeight;
+                const noCollapsedClass = !element.classList.contains('collapsed');
+                const contentVisible = window.getComputedStyle(element.querySelector('.config-content')).display !== 'none';
+                
+                logTest('Expand Functionality', 
+                    noCollapsedClass && contentVisible && expandedHeight > collapsedHeight,
+                    `Height: ${collapsedHeight}px → ${expandedHeight}px, Content visible: ${contentVisible}`
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Collapse/Expand', false, error.message);
+                return false;
+            }
+        }
+        
+        async function testResizeCollapseSequence() {
+            try {
+                const console = testConsole;
+                const element = console.getElement();
+                
+                // Step 1: Set initial size
+                console.setSize(300, 200);
+                await sleep(100);
+                
+                const step1Width = element.offsetWidth;
+                const step1Height = element.offsetHeight;
+                logTest('Step 1: Initial Resize', 
+                    step1Width === 300 && step1Height === 200,
+                    `Size set to: ${step1Width}x${step1Height}`
+                );
+                
+                // Step 2: Resize to larger
+                console.setSize(400, 250);
+                await sleep(100);
+                
+                const step2Width = element.offsetWidth;
+                const step2Height = element.offsetHeight;
+                logTest('Step 2: Second Resize', 
+                    step2Width === 400 && step2Height === 250,
+                    `Size changed to: ${step2Width}x${step2Height}`
+                );
+                
+                // Step 3: Collapse
+                console.toggleCollapse();
+                await sleep(200);
+                
+                const step3Height = element.offsetHeight;
+                const isCollapsed = element.classList.contains('collapsed');
+                const headerHeight = element.querySelector('.config-header').offsetHeight;
+                
+                logTest('Step 3: Collapse After Resize', 
+                    isCollapsed && step3Height <= headerHeight + 10,
+                    `Collapsed height: ${step3Height}px (header: ${headerHeight}px)`
+                );
+                
+                // Step 4: Try to resize while collapsed (should store the size)
+                console.setSize(500, 350);
+                await sleep(100);
+                
+                // Should still be collapsed with header height
+                const step4Height = element.offsetHeight;
+                const stillCollapsed = element.classList.contains('collapsed');
+                
+                logTest('Step 4: Resize While Collapsed', 
+                    stillCollapsed && step4Height <= headerHeight + 10,
+                    `Still collapsed height: ${step4Height}px`
+                );
+                
+                // Step 5: Expand - should restore to the new size set while collapsed
+                console.toggleCollapse();
+                await sleep(200);
+                
+                const step5Width = element.offsetWidth;
+                const step5Height = element.offsetHeight;
+                const isExpanded = !element.classList.contains('collapsed');
+                
+                // This is the critical test - it should expand to the size set while collapsed
+                logTest('Step 5: Expand After Resize While Collapsed', 
+                    isExpanded && step5Width === 500 && step5Height === 350,
+                    `Expanded to: ${step5Width}x${step5Height} (expected: 500x350)`
+                );
+                
+                // Step 6: Collapse again to test the cycle
+                console.toggleCollapse();
+                await sleep(200);
+                
+                const step6Height = element.offsetHeight;
+                const collapsedAgain = element.classList.contains('collapsed');
+                
+                logTest('Step 6: Second Collapse', 
+                    collapsedAgain && step6Height <= headerHeight + 10,
+                    `Second collapse height: ${step6Height}px`
+                );
+                
+                // Step 7: Final expand and resize test
+                console.toggleCollapse();
+                await sleep(200);
+                
+                console.setSize(350, 280);
+                await sleep(100);
+                
+                const finalWidth = element.offsetWidth;
+                const finalHeight = element.offsetHeight;
+                const finalExpanded = !element.classList.contains('collapsed');
+                
+                logTest('Step 7: Final Resize After Full Cycle', 
+                    finalExpanded && finalWidth === 350 && finalHeight === 280,
+                    `Final size: ${finalWidth}x${finalHeight} (expected: 350x280)`
+                );
+                
+                // Overall test result
+                const allStepsPass = testResults.slice(-7).every(result => result.passed);
+                
+                return allStepsPass;
+                
+            } catch (error) {
+                logTest('Resize-Collapse Sequence', false, error.message);
+                return false;
+            }
+        }
+        
+        async function testButtonFunctionality() {
+            try {
+                const console = testConsole;
+                const element = console.getElement();
+                
+                // Test minimize button
+                const minimizeBtn = element.querySelector('.minimize-btn');
+                const closeBtn = element.querySelector('.close-btn');
+                
+                logTest('Buttons Present', 
+                    minimizeBtn && closeBtn,
+                    'Both minimize and close buttons found'
+                );
+                
+                // Test minimize button click
+                const wasCollapsed = element.classList.contains('collapsed');
+                minimizeBtn.click();
+                await sleep(200);
+                
+                const isCollapsedAfterClick = element.classList.contains('collapsed');
+                logTest('Minimize Button Click', 
+                    isCollapsedAfterClick !== wasCollapsed,
+                    `Collapsed state changed: ${wasCollapsed} → ${isCollapsedAfterClick}`
+                );
+                
+                // Test close button click
+                closeBtn.click();
+                await sleep(200);
+                
+                logTest('Close Button Click', 
+                    console.isHidden(),
+                    'Console hidden after close button click'
+                );
+                
+                // Restore for other tests
+                console.show();
+                
+                return true;
+            } catch (error) {
+                logTest('Button Functionality', false, error.message);
+                return false;
+            }
+        }
+        
+        async function testMoveableIntegration() {
+            try {
+                const console = testConsole;
+                
+                logTest('Moveable Integration', 
+                    console.moveable && typeof console.moveable.updateTarget === 'function',
+                    'Moveable instance created and has expected methods'
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Moveable Integration', false, error.message);
+                return false;
+            }
+        }
+        
+        async function runAllTests() {
+            testResults = [];
+            updateTestDisplay();
+            
+            console.log('🧪 Starting ConfigConsole Test Suite...');
+            
+            const tests = [
+                testBasicInitialization,
+                testShowHide,
+                testCollapseExpand,
+                testButtonFunctionality,
+                testMoveableIntegration,
+                testResizeCollapseSequence
+            ];
+            
+            let passed = 0;
+            let total = tests.length;
+            
+            for (const test of tests) {
+                try {
+                    const result = await test();
+                    if (result) passed++;
+                } catch (error) {
+                    console.error('Test error:', error);
+                }
+                await sleep(100);
+            }
+            
+            const allPassed = passed === total;
+            logTest('🏁 TEST SUITE COMPLETE', allPassed, `${passed}/${total} tests passed`);
+            
+            if (allPassed) {
+                console.log('🎉 ALL TESTS PASSED!');
+            } else {
+                console.log(`❌ ${total - passed} tests failed`);
+            }
+            
+            return allPassed;
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof ConfigConsole !== 'undefined' && typeof Moveable !== 'undefined') {
+                    initTestConsole();
+                    console.log('✅ Test environment ready');
+                } else {
+                    console.error('❌ Dependencies not loaded');
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete DebugWindow Test - GitHub Raw File</title>
+    <title>Complete ConfigConsole Test - GitHub Raw File</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -115,13 +115,13 @@
 </head>
 <body>
     <div class="test-container">
-        <h1>🧪 Complete DebugWindow Test Suite</h1>
+        <h1>🧪 Complete ConfigConsole Test Suite</h1>
         <p>Testing the debug window component loaded directly from GitHub raw file.</p>
         
         <div class="url-info">
             <strong>🔗 Testing URLs:</strong><br>
-            <code id="primary-url">https://raw.githubusercontent.com/maxPalmira/debug-window/main/debug-window.js</code><br>
-            <small>Fallback: Local file (./debug-window.js)</small>
+            <code id="primary-url">https://raw.githubusercontent.com/maxPalmira/config-console/main/config-console.js</code><br>
+            <small>Fallback: Local file (./config-console.js)</small>
         </div>
         
         <div id="load-status" class="status loading">
@@ -134,8 +134,8 @@
             <div class="test-section">
                 <h3>🎯 Core Methods</h3>
                 <div class="button-grid">
-                    <button onclick="createDebugWindow()">Create Debug Window</button>
-                    <button onclick="initDebugWindow()">Initialize Window</button>
+                    <button onclick="createConfigConsole()">Create Config Console</button>
+                    <button onclick="initConfigConsole()">Initialize Window</button>
                     <button onclick="showWindow()">Show Window</button>
                     <button onclick="hideWindow()">Hide Window</button>
                     <button onclick="toggleWindow()">Toggle Window</button>
@@ -245,10 +245,10 @@
         const resultsEl = document.getElementById('testResults');
         
         // Test loading with fallback
-        async function loadDebugWindowWithFallback() {
+        async function loadConfigConsoleWithFallback() {
             const sources = [
-                'https://raw.githubusercontent.com/maxPalmira/debug-window/main/debug-window.js',
-                './debug-window.js' // Local fallback
+                'https://raw.githubusercontent.com/maxPalmira/config-console/main/config-console.js',
+                './config-console.js' // Local fallback
             ];
             
             for (const src of sources) {
@@ -267,8 +267,8 @@
                         setTimeout(() => reject(new Error('Load timeout')), 10000);
                     });
                     
-                    if (typeof DebugWindow !== 'undefined') {
-                        statusEl.textContent = `✅ Success! DebugWindow loaded from ${src.includes('github') ? 'GitHub' : 'local file'}`;
+                    if (typeof ConfigConsole !== 'undefined') {
+                        statusEl.textContent = `✅ Success! ConfigConsole loaded from ${src.includes('github') ? 'GitHub' : 'local file'}`;
                         statusEl.className = 'status success';
                         controlsEl.style.display = 'block';
                         addResult(`✅ Component loaded successfully from: ${src}`);
@@ -280,7 +280,7 @@
             }
             
             // If all sources failed
-            statusEl.textContent = '❌ Failed to load DebugWindow from all sources';
+            statusEl.textContent = '❌ Failed to load ConfigConsole from all sources';
             statusEl.className = 'status error';
             addResult('❌ All loading attempts failed');
             return false;
@@ -288,28 +288,28 @@
         
         // Start loading when page is ready
         window.addEventListener('load', () => {
-            loadDebugWindowWithFallback();
+            loadConfigConsoleWithFallback();
         });
         
         // CORE METHODS
-        function createDebugWindow() {
+        function createConfigConsole() {
             if (debugWindow) {
                 debugWindow.destroy();
             }
-            debugWindow = new DebugWindow({
-                title: 'Test Debug Window',
+            debugWindow = new ConfigConsole({
+                title: 'Test Config Console',
                 position: { x: 50, y: 50 },
                 size: { width: 400, height: 500 }
             });
-            addResult('✅ DebugWindow instance created');
+            addResult('✅ ConfigConsole instance created');
         }
         
-        function initDebugWindow() {
+        function initConfigConsole() {
             if (!debugWindow) {
-                createDebugWindow();
+                createConfigConsole();
             }
             debugWindow.init();
-            addResult('✅ DebugWindow initialized and displayed');
+            addResult('✅ ConfigConsole initialized and displayed');
         }
         
         function showWindow() {
@@ -628,9 +628,9 @@
             addResult('🚀 Running comprehensive test suite...');
             
             // Core functionality
-            createDebugWindow();
+            createConfigConsole();
             await delay(200);
-            initDebugWindow();
+            initConfigConsole();
             await delay(200);
             
             // Add content

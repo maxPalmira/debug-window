@@ -1,10 +1,10 @@
 {
-  "name": "debug-window",
+  "name": "config-console",
   "version": "1.0.0",
-  "description": "A draggable, resizable debug panel for web applications with localStorage state persistence",
-  "main": "debug-window.js",
+  "description": "A draggable, resizable configuration panel for web applications with localStorage state persistence",
+  "main": "config-console.js",
   "files": [
-    "debug-window.js",
+    "config-console.js",
     "README.md",
     "LICENSE"
   ],
@@ -27,12 +27,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/debug-window.git"
+    "url": "git+https://github.com/yourusername/config-console.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/debug-window/issues"
+    "url": "https://github.com/yourusername/config-console/issues"
   },
-  "homepage": "https://github.com/yourusername/debug-window#readme",
+  "homepage": "https://github.com/yourusername/config-console#readme",
   "dependencies": {},
   "peerDependencies": {
     "moveable": "^0.30.0"
@@ -40,5 +40,5 @@
   "engines": {
     "node": ">=12.0.0"
   },
-  "browser": "debug-window.js"
+  "browser": "config-console.js"
 } 
