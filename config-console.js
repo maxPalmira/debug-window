@@ -459,7 +459,123 @@
     font-style: italic;
 }
 
+/* Range Sliders */
+.range-slider-control {
+    margin-bottom: 6px;
+}
 
+.control-label {
+    display: block;
+    font-size: 10px;
+    color: #aaaaaa;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.range-slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.range-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    outline: none;
+    border: 1px solid #555;
+    transition: background 0.2s;
+}
+
+.range-slider:hover {
+    background: #2a2a2a;
+}
+
+.range-slider:focus {
+    border-color: #007acc;
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #007acc;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+    background: #0099ff;
+    transform: scale(1.1);
+}
+
+.range-slider::-webkit-slider-thumb:active {
+    background: #005a9e;
+    transform: scale(0.95);
+}
+
+.range-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #007acc;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.range-slider::-moz-range-thumb:hover {
+    background: #0099ff;
+    transform: scale(1.1);
+}
+
+.range-slider::-moz-range-thumb:active {
+    background: #005a9e;
+    transform: scale(0.95);
+}
+
+.range-slider::-moz-range-track {
+    height: 4px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    border: 1px solid #555;
+}
+
+.range-value {
+    min-width: 40px;
+    font-size: 10px;
+    color: #87ceeb;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-align: right;
+    padding: 2px 4px;
+    background: #1a1a1a;
+    border: 1px solid #555;
+    border-radius: 3px;
+}
+
+.range-slider:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.range-slider:disabled::-webkit-slider-thumb {
+    cursor: not-allowed;
+    background: #666666;
+}
+
+.range-slider:disabled::-moz-range-thumb {
+    cursor: not-allowed;
+    background: #666666;
+}
 
 /* Moveable.js Styling */
 .moveable-control-box .moveable-control {
@@ -1358,6 +1474,128 @@
             
             return this;
         }
+
+        addRangeSlider(label, options = {}, onChange = null) {
+            // Set default options
+            const sliderOptions = {
+                min: 0,
+                max: 100,
+                step: 1,
+                value: 50,
+                formatter: null,
+                showValue: true,
+                group: null,
+                suffix: '',
+                disabled: false,
+                ...options
+            };
+            
+            // Ensure value is within bounds
+            sliderOptions.value = Math.max(sliderOptions.min, Math.min(sliderOptions.max, sliderOptions.value));
+            
+            // Create container
+            const container = document.createElement('div');
+            container.className = 'range-slider-control';
+            
+            // Create label
+            const labelElement = document.createElement('label');
+            labelElement.className = 'control-label';
+            labelElement.textContent = label;
+            
+            // Create slider wrapper
+            const wrapper = document.createElement('div');
+            wrapper.className = 'range-slider-wrapper';
+            
+            // Create range input
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.className = 'range-slider';
+            slider.min = sliderOptions.min;
+            slider.max = sliderOptions.max;
+            slider.step = sliderOptions.step;
+            slider.value = sliderOptions.value;
+            slider.disabled = sliderOptions.disabled;
+            
+            // Create value display
+            const valueDisplay = document.createElement('div');
+            valueDisplay.className = 'range-value';
+            
+            // Function to format and update value display
+            const updateValueDisplay = (value) => {
+                let displayValue = value;
+                if (sliderOptions.formatter && typeof sliderOptions.formatter === 'function') {
+                    displayValue = sliderOptions.formatter(parseFloat(value));
+                } else {
+                    displayValue = value + sliderOptions.suffix;
+                }
+                valueDisplay.textContent = displayValue;
+            };
+            
+            // Initialize value display
+            updateValueDisplay(sliderOptions.value);
+            
+            // Add event listeners
+            const handleInput = (e) => {
+                const value = parseFloat(e.target.value);
+                updateValueDisplay(value);
+                if (onChange) {
+                    onChange(value, e);
+                }
+            };
+            
+            const handleChange = (e) => {
+                const value = parseFloat(e.target.value);
+                if (onChange) {
+                    onChange(value, e);
+                }
+            };
+            
+            slider.addEventListener('input', handleInput);
+            slider.addEventListener('change', handleChange);
+            
+            // Add keyboard support
+            slider.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const newValue = Math.max(sliderOptions.min, parseFloat(slider.value) - parseFloat(sliderOptions.step));
+                    slider.value = newValue;
+                    handleInput({ target: slider });
+                } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const newValue = Math.min(sliderOptions.max, parseFloat(slider.value) + parseFloat(sliderOptions.step));
+                    slider.value = newValue;
+                    handleInput({ target: slider });
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    slider.value = sliderOptions.min;
+                    handleInput({ target: slider });
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    slider.value = sliderOptions.max;
+                    handleInput({ target: slider });
+                }
+            });
+            
+            // Assemble the component
+            wrapper.appendChild(slider);
+            if (sliderOptions.showValue) {
+                wrapper.appendChild(valueDisplay);
+            }
+            
+            container.appendChild(labelElement);
+            container.appendChild(wrapper);
+            
+            // Add to group or section
+            if (sliderOptions.group) {
+                this.addToGroup(sliderOptions.group, container);
+            } else {
+                const sectionName = sliderOptions.section || 'Controls';
+                const section = this.getOrCreateSection(sectionName);
+                section.appendChild(container);
+            }
+            
+            return this;
+        }
         
         updateMetric(label, newValue) {
             const metrics = this.window.querySelectorAll('.metric-item');
@@ -1509,6 +1747,46 @@
                     this.addLog('Invalid timeout value', 'warning');
                 }
             }, { placeholder: 'Enter timeout in milliseconds...' });
+            
+            // Add range sliders
+            this.addRangeSlider('Volume', {
+                min: 0,
+                max: 100,
+                value: 75,
+                step: 5,
+                suffix: '%'
+            }, (value) => {
+                this.addLog(`Volume set to ${value}%`, 'info');
+            });
+            
+            this.addRangeSlider('Opacity', {
+                min: 0,
+                max: 1,
+                value: 0.8,
+                step: 0.1,
+                formatter: (val) => `${Math.round(val * 100)}%`
+            }, (value) => {
+                this.addLog(`Opacity set to ${Math.round(value * 100)}%`, 'info');
+            });
+            
+            this.addRangeSlider('Quality', {
+                min: 1,
+                max: 10,
+                value: 7,
+                step: 1
+            }, (value) => {
+                this.addLog(`Quality set to ${value}`, 'info');
+            });
+            
+            this.addRangeSlider('Temperature', {
+                min: -20,
+                max: 50,
+                value: 22,
+                step: 1,
+                suffix: '°C'
+            }, (value) => {
+                this.addLog(`Temperature set to ${value}°C`, 'info');
+            });
             
             // Simulate real-time metric updates
             let cpuUsage = 45;

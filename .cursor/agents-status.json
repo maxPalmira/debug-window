@@ -1,6 +1,15 @@
 {
   "agents": [
     {
+      "agent_id": "project_manager_001",
+      "agent_role": "Project Manager",
+      "current_task": "task_feature_range_slider",
+      "status": "TASK_CREATED",
+      "last_updated": "2024-12-27",
+      "current_focus": "Created new range slider feature task for config console - awaiting dev agent assignment",
+      "working_directory": "/Users/max/config-console"
+    },
+    {
       "agent_id": "development_agent_001", 
       "agent_role": "Development Agent",
       "current_task": "task_feature_pin_button",
@@ -11,7 +20,7 @@
       "tasks_created": [
         {
           "task_id": "task_feature_pin_button",
-          "status": "READY",
+          "status": "COMPLETED",
           "assigned_to": "Development Agent",
           "branch": "feature/pin-button",
           "created_date": "2024-12-27"
@@ -19,7 +28,25 @@
       ]
     }
   ],
+  "tasks_created": [
+    {
+      "task_id": "task_feature_pin_button",
+      "status": "COMPLETED",
+      "assigned_to": "Development Agent",
+      "branch": "feature/pin-button",
+      "created_date": "2024-12-27",
+      "created_by": "development_agent_001"
+    },
+    {
+      "task_id": "task_feature_range_slider",
+      "status": "PENDING",
+      "assigned_to": "Development Agent (main)",
+      "branch": "feature/range-slider",
+      "created_date": "2024-12-27",
+      "created_by": "project_manager_001"
+    }
+  ],
   "last_updated": "2024-12-27",
-  "active_agents_count": 1,
-  "total_tasks": 1
+  "active_agents_count": 2,
+  "total_tasks": 2
 } 

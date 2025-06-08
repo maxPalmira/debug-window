@@ -54,6 +54,7 @@
         <button onclick="testConsole.destroy(); initTestConsole()">🔄 Reset Console</button>
         <button onclick="testResizeCollapseSequence()">🔧 Test Resize-Collapse Sequence</button>
         <button onclick="testPinButton()">📌 Test Pin Button</button>
+        <button onclick="runRangeSliderTests()">🎚️ Test Range Sliders</button>
     </div>
 
     <!-- Load dependencies -->
@@ -436,6 +437,201 @@
                 return false;
             }
         }
+
+        // RANGE SLIDER TESTS - TDD RED PHASE (These will fail until implementation)
+        async function testRangeSliderMethod() {
+            try {
+                const console = testConsole;
+                
+                // Test that addRangeSlider method exists
+                logTest('addRangeSlider Method Exists', 
+                    typeof console.addRangeSlider === 'function',
+                    'ConfigConsole has addRangeSlider method'
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('addRangeSlider Method Exists', false, error.message);
+                return false;
+            }
+        }
+
+        async function testBasicRangeSlider() {
+            try {
+                const console = testConsole;
+                let changeValue = null;
+                
+                // Add basic range slider
+                const slider = console.addRangeSlider('Test Slider', {
+                    min: 0,
+                    max: 100,
+                    value: 50,
+                    step: 1
+                }, (value) => {
+                    changeValue = value;
+                });
+                
+                // Check if slider element exists in DOM
+                const element = console.getElement();
+                const sliderControl = element.querySelector('.range-slider-control');
+                const sliderInput = element.querySelector('.range-slider');
+                const sliderValue = element.querySelector('.range-value');
+                
+                logTest('Range Slider DOM Elements', 
+                    sliderControl && sliderInput && sliderValue,
+                    'Slider container, input, and value display elements created'
+                );
+                
+                logTest('Range Slider Attributes', 
+                    sliderInput && sliderInput.min === '0' && sliderInput.max === '100' && sliderInput.value === '50',
+                    `Slider attributes: min=${sliderInput?.min}, max=${sliderInput?.max}, value=${sliderInput?.value}`
+                );
+                
+                logTest('Range Slider Value Display', 
+                    sliderValue && sliderValue.textContent === '50',
+                    `Value display shows: ${sliderValue?.textContent}`
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Basic Range Slider', false, error.message);
+                return false;
+            }
+        }
+
+        async function testRangeSliderCallback() {
+            try {
+                const console = testConsole;
+                let callbackValue = null;
+                let callbackCalled = false;
+                
+                // Clear previous content
+                console.clear();
+                
+                // Add range slider with callback
+                console.addRangeSlider('Callback Test', {
+                    min: 0,
+                    max: 10,
+                    value: 5,
+                    step: 1
+                }, (value) => {
+                    callbackValue = value;
+                    callbackCalled = true;
+                });
+                
+                // Simulate slider change
+                const sliderInput = console.getElement().querySelector('.range-slider');
+                if (sliderInput) {
+                    sliderInput.value = '7';
+                    const event = new Event('input', { bubbles: true });
+                    sliderInput.dispatchEvent(event);
+                    await sleep(100);
+                }
+                
+                logTest('Range Slider Callback', 
+                    callbackCalled && callbackValue === 7,
+                    `Callback called: ${callbackCalled}, value: ${callbackValue}`
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Range Slider Callback', false, error.message);
+                return false;
+            }
+        }
+
+        async function testRangeSliderValueUpdate() {
+            try {
+                const console = testConsole;
+                
+                // Clear and add range slider
+                console.clear();
+                console.addRangeSlider('Value Update Test', {
+                    min: 0,
+                    max: 100,
+                    value: 25,
+                    step: 5
+                });
+                
+                const sliderInput = console.getElement().querySelector('.range-slider');
+                const valueDisplay = console.getElement().querySelector('.range-value');
+                
+                // Simulate user interaction
+                if (sliderInput) {
+                    sliderInput.value = '75';
+                    const event = new Event('input', { bubbles: true });
+                    sliderInput.dispatchEvent(event);
+                    await sleep(50);
+                }
+                
+                logTest('Range Slider Value Update', 
+                    valueDisplay && valueDisplay.textContent === '75',
+                    `Value display updated to: ${valueDisplay?.textContent}`
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Range Slider Value Update', false, error.message);
+                return false;
+            }
+        }
+
+        async function testRangeSliderFormatter() {
+            try {
+                const console = testConsole;
+                
+                // Clear and add range slider with formatter
+                console.clear();
+                console.addRangeSlider('Formatted Slider', {
+                    min: 0,
+                    max: 1,
+                    value: 0.5,
+                    step: 0.1,
+                    formatter: (val) => `${Math.round(val * 100)}%`
+                });
+                
+                const valueDisplay = console.getElement().querySelector('.range-value');
+                
+                logTest('Range Slider Formatter', 
+                    valueDisplay && valueDisplay.textContent === '50%',
+                    `Formatted value display: ${valueDisplay?.textContent}`
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Range Slider Formatter', false, error.message);
+                return false;
+            }
+        }
+
+        async function testRangeSliderInGroup() {
+            try {
+                const console = testConsole;
+                
+                // Clear and add group with range slider
+                console.clear();
+                console.addGroup('Display Settings', { description: 'Visual settings' });
+                console.addRangeSlider('Opacity', {
+                    min: 0,
+                    max: 100,
+                    value: 80,
+                    group: 'Display Settings'
+                });
+                
+                const groupElement = console.getElement().querySelector('.config-group');
+                const sliderInGroup = groupElement && groupElement.querySelector('.range-slider-control');
+                
+                logTest('Range Slider in Group', 
+                    groupElement && sliderInGroup,
+                    'Range slider successfully added to group'
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Range Slider in Group', false, error.message);
+                return false;
+            }
+        }
         
         async function runAllTests() {
             testResults = [];
@@ -451,7 +647,14 @@
                 testMoveableIntegration,
                 testPinButton,
                 testPinStatePersistence,
-                testResizeCollapseSequence
+                testResizeCollapseSequence,
+                // Range Slider Tests
+                testRangeSliderMethod,
+                testBasicRangeSlider,
+                testRangeSliderCallback,
+                testRangeSliderValueUpdate,
+                testRangeSliderFormatter,
+                testRangeSliderInGroup
             ];
             
             let passed = 0;
@@ -475,6 +678,40 @@
             } else {
                 console.log(`❌ ${total - passed} tests failed`);
             }
+            
+            return allPassed;
+        }
+
+        async function runRangeSliderTests() {
+            testResults = [];
+            updateTestDisplay();
+            
+            console.log('🎚️ Starting Range Slider Tests...');
+            
+            const rangeSliderTests = [
+                testRangeSliderMethod,
+                testBasicRangeSlider,
+                testRangeSliderCallback,
+                testRangeSliderValueUpdate,
+                testRangeSliderFormatter,
+                testRangeSliderInGroup
+            ];
+            
+            let passed = 0;
+            let total = rangeSliderTests.length;
+            
+            for (const test of rangeSliderTests) {
+                try {
+                    const result = await test();
+                    if (result) passed++;
+                } catch (error) {
+                    console.error('Range Slider Test error:', error);
+                }
+                await sleep(100);
+            }
+            
+            const allPassed = passed === total;
+            logTest('🏁 RANGE SLIDER TESTS COMPLETE', allPassed, `${passed}/${total} tests passed`);
             
             return allPassed;
         }
