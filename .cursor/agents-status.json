@@ -1,0 +1,25 @@
+{
+  "agents": [
+    {
+      "agent_id": "development_agent_001", 
+      "agent_role": "Development Agent",
+      "current_task": "task_feature_pin_button",
+      "status": "IN_PROGRESS",
+      "last_updated": "2024-12-27",
+      "current_focus": "Implementing pin button feature - TDD approach",
+      "working_directory": "/Users/max/debug-window",
+      "tasks_created": [
+        {
+          "task_id": "task_feature_pin_button",
+          "status": "READY",
+          "assigned_to": "Development Agent",
+          "branch": "feature/pin-button",
+          "created_date": "2024-12-27"
+        }
+      ]
+    }
+  ],
+  "last_updated": "2024-12-27",
+  "active_agents_count": 1,
+  "total_tasks": 1
+} 
