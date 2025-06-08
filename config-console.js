@@ -95,6 +95,18 @@
     color: #ffffff;
 }
 
+.config-btn.pin-btn {
+    color: #cccccc;
+}
+
+.config-console.pinned .config-btn.pin-btn {
+    color: #007acc;
+}
+
+.config-console.pinned {
+    z-index: 10000;
+}
+
 .config-content {
     flex: 1;
     padding: 8px;
@@ -517,6 +529,7 @@
                 size: options.size || { width: 300, height: 400 },
                 visible: options.visible !== false,
                 collapsed: options.collapsed || false,
+                pinned: options.pinned || false,
                 storageKey: options.storageKey || 'configConsole'
             };
             
@@ -525,6 +538,7 @@
             this.moveable = null;
             this.isVisible = this.options.visible;
             this.isCollapsed = this.options.collapsed;
+            this.isPinned = this.options.pinned;
             this.sections = new Map();
             this.groups = new Map();
             this.logCount = 0;
@@ -536,10 +550,26 @@
             this.generateHTML();
         }
         
+        getPinIcon() {
+            // Simple SVG pin icons for pinned and unpinned states
+            if (this.isPinned) {
+                // Angled/tilted pin (pinned state)
+                return `<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="m9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a5.927 5.927 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-.42.195-.615 0-.195-.195-.195-.42 0-.615L5.322 9.475l-2.829-2.828a.5.5 0 0 1 0-.707c.688-.688 1.673-.766 2.375-.72a5.922 5.922 0 0 1 1.013.16l3.134-3.133c-.021-.126-.039-.284-.039-.461 0-.431.108-1.023.589-1.503a.5.5 0 0 1 .353-.146"/>
+                </svg>`;
+            } else {
+                // Upright pin (unpinned state)
+                return `<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.126.125-.25.224-.354.298v4.431l.078.048c.203.127.476.314.751.555C12.36 7.775 13 8.527 13 9.5a.5.5 0 0 1-.5.5h-4v4.5c0 .276-.224 1.5-.5 1.5s-.5-1.224-.5-1.5V10h-4a.5.5 0 0 1-.5-.5c0-.973.64-1.725 1.17-2.189A5.921 5.921 0 0 1 5 6.708V2.277a2.77 2.77 0 0 1-.354-.298C4.342 1.674 4 1.179 4 .5a.5.5 0 0 1 .146-.354z"/>
+                </svg>`;
+            }
+        }
+        
         generateHTML() {
             // Create main window element
             this.window = document.createElement('div');
             this.window.className = 'config-console';
+            this.window.style.position = this.isPinned ? 'fixed' : 'absolute';
             this.window.style.left = `${this.options.position.x}px`;
             this.window.style.top = `${this.options.position.y}px`;
             this.window.style.width = `${this.options.size.width}px`;
@@ -551,6 +581,10 @@
             
             if (this.isCollapsed) {
                 this.window.classList.add('collapsed');
+            }
+            
+            if (this.isPinned) {
+                this.window.classList.add('pinned');
             }
             
             // Create header
@@ -575,6 +609,12 @@
             const controls = document.createElement('div');
             controls.className = 'config-controls';
             
+            // Pin button
+            const pinBtn = document.createElement('button');
+            pinBtn.className = 'config-btn pin-btn';
+            pinBtn.innerHTML = this.getPinIcon();
+            pinBtn.title = 'Pin/Unpin window';
+            
             // Minimize/collapse button
             const minimizeBtn = document.createElement('button');
             minimizeBtn.className = 'config-btn minimize-btn';
@@ -587,6 +627,7 @@
             closeBtn.innerHTML = '×';
             closeBtn.title = 'Close';
             
+            controls.appendChild(pinBtn);
             controls.appendChild(minimizeBtn);
             controls.appendChild(closeBtn);
             
@@ -604,6 +645,7 @@
             this.header = header;
             this.content = content;
             this.dragIcon = dragIcon;
+            this.pinBtn = pinBtn;
             this.minimizeBtn = minimizeBtn;
         }
         
@@ -645,6 +687,13 @@
         setupEventDelegation() {
             // Use event delegation for header controls to ensure they always work
             this.window.addEventListener('click', (e) => {
+                // Handle pin button
+                if (e.target.classList.contains('pin-btn') || e.target.closest('.pin-btn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.togglePin();
+                }
+                
                 // Handle minimize button
                 if (e.target.classList.contains('minimize-btn')) {
                     e.preventDefault();
@@ -745,6 +794,7 @@
                 },
                 visible: this.isVisible,
                 collapsed: this.isCollapsed,
+                pinned: this.isPinned,
                 timestamp: Date.now()
             };
             
@@ -794,6 +844,21 @@
                         this.window.classList.remove('collapsed');
                     }
                 }
+                
+                if (typeof state.pinned === 'boolean') {
+                    this.isPinned = state.pinned;
+                    if (this.isPinned) {
+                        this.window.style.position = 'fixed';
+                        this.window.classList.add('pinned');
+                    } else {
+                        this.window.style.position = 'absolute';
+                        this.window.classList.remove('pinned');
+                    }
+                    // Update pin button icon if it exists
+                    if (this.pinBtn) {
+                        this.pinBtn.innerHTML = this.getPinIcon();
+                    }
+                }
             } catch (error) {
                 console.warn('Failed to load debug window state:', error);
             }
@@ -823,6 +888,19 @@
                 this.hide();
             }
             
+            // Reset pin state
+            this.isPinned = this.options.pinned;
+            if (this.isPinned) {
+                this.window.style.position = 'fixed';
+                this.window.classList.add('pinned');
+            } else {
+                this.window.style.position = 'absolute';
+                this.window.classList.remove('pinned');
+            }
+            if (this.pinBtn) {
+                this.pinBtn.innerHTML = this.getPinIcon();
+            }
+            
             this.clearState();
             
             return this;
@@ -841,6 +919,7 @@
                 },
                 visible: this.isVisible,
                 collapsed: this.isCollapsed,
+                pinned: this.isPinned,
                 sections: Array.from(this.sections.keys()),
                 logCount: this.logCount
             };
@@ -915,6 +994,28 @@
             }
             
             // Auto-save collapsed state
+            this.saveState();
+            
+            return this;
+        }
+        
+        togglePin() {
+            this.isPinned = !this.isPinned;
+            
+            if (this.isPinned) {
+                this.window.style.position = 'fixed';
+                this.window.classList.add('pinned');
+            } else {
+                this.window.style.position = 'absolute';
+                this.window.classList.remove('pinned');
+            }
+            
+            // Update pin button icon
+            if (this.pinBtn) {
+                this.pinBtn.innerHTML = this.getPinIcon();
+            }
+            
+            // Auto-save pin state
             this.saveState();
             
             return this;

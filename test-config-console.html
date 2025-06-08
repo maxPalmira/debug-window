@@ -53,6 +53,7 @@
         <button onclick="runAllTests()">🧪 Run All Tests</button>
         <button onclick="testConsole.destroy(); initTestConsole()">🔄 Reset Console</button>
         <button onclick="testResizeCollapseSequence()">🔧 Test Resize-Collapse Sequence</button>
+        <button onclick="testPinButton()">📌 Test Pin Button</button>
     </div>
 
     <!-- Load dependencies -->
@@ -355,6 +356,86 @@
                 return false;
             }
         }
+
+        async function testPinButton() {
+            try {
+                const console = testConsole;
+                const element = console.getElement();
+                
+                // Test pin button exists
+                const pinBtn = element.querySelector('.pin-btn');
+                logTest('Pin Button Present', 
+                    pinBtn && pinBtn.innerHTML.includes('<svg'),
+                    'Pin button found with SVG icon'
+                );
+                
+                // Test initial state (should be unpinned)
+                const initialPosition = window.getComputedStyle(element).position;
+                logTest('Initial Position State', 
+                    initialPosition === 'absolute' && !console.isPinned,
+                    `Initial position: ${initialPosition}, isPinned: ${console.isPinned}`
+                );
+                
+                // Test pin button click to pin
+                pinBtn.click();
+                await sleep(200);
+                
+                const pinnedPosition = window.getComputedStyle(element).position;
+                const hasPinnedClass = element.classList.contains('pinned');
+                logTest('Pin Button Click - Pin', 
+                    pinnedPosition === 'fixed' && console.isPinned && hasPinnedClass,
+                    `Position: ${pinnedPosition}, isPinned: ${console.isPinned}, hasPinnedClass: ${hasPinnedClass}`
+                );
+                
+                // Test pin button click to unpin
+                pinBtn.click();
+                await sleep(200);
+                
+                const unpinnedPosition = window.getComputedStyle(element).position;
+                const noPinnedClass = !element.classList.contains('pinned');
+                logTest('Pin Button Click - Unpin', 
+                    unpinnedPosition === 'absolute' && !console.isPinned && noPinnedClass,
+                    `Position: ${unpinnedPosition}, isPinned: ${console.isPinned}, noPinnedClass: ${noPinnedClass}`
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Pin Button', false, error.message);
+                return false;
+            }
+        }
+
+        async function testPinStatePersistence() {
+            try {
+                const console = testConsole;
+                
+                // Pin the console
+                if (console.togglePin) {
+                    console.togglePin();
+                    await sleep(100);
+                }
+                
+                // Get state and verify pin is included
+                const state = console.getState();
+                logTest('Pin State in getState()', 
+                    typeof state.pinned === 'boolean',
+                    `getState() includes pinned: ${state.pinned}`
+                );
+                
+                // Check localStorage includes pin state
+                const savedState = localStorage.getItem(console.options.storageKey);
+                const parsedState = savedState ? JSON.parse(savedState) : null;
+                logTest('Pin State Persistence', 
+                    parsedState && typeof parsedState.pinned === 'boolean',
+                    `localStorage includes pinned: ${parsedState?.pinned}`
+                );
+                
+                return true;
+            } catch (error) {
+                logTest('Pin State Persistence', false, error.message);
+                return false;
+            }
+        }
         
         async function runAllTests() {
             testResults = [];
@@ -368,6 +449,8 @@
                 testCollapseExpand,
                 testButtonFunctionality,
                 testMoveableIntegration,
+                testPinButton,
+                testPinStatePersistence,
                 testResizeCollapseSequence
             ];
             
