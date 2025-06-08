@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDN Update Test</title>
+    <style>
+        body {
+            background: #000;
+            color: white;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #0a4d0a; }
+        .error { background: #4d0a0a; }
+        .info { background: #1a1a3a; }
+    </style>
+</head>
+<body>
+    <h1>🔄 CDN Update Test</h1>
+    <p>Testing if jsDelivr CDN is serving the updated config-console.js with range slider functionality...</p>
+    
+    <div id="status" class="status info">⏳ Loading and testing...</div>
+    
+    <!-- Load from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/moveable@0.30.0/dist/moveable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/maxPalmira/debug-window@main/config-console.js"></script>
+    
+    <script>
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function testCDN() {
+            try {
+                // Test if ConfigConsole exists
+                if (typeof ConfigConsole === 'undefined') {
+                    updateStatus('❌ ConfigConsole not loaded from CDN', 'error');
+                    return;
+                }
+                
+                // Create instance
+                const console = new ConfigConsole({
+                    title: 'CDN Test Console',
+                    position: { x: 50, y: 100 },
+                    size: { width: 300, height: 200 }
+                }).init();
+                
+                // Test if addRangeSlider method exists
+                if (typeof console.addRangeSlider !== 'function') {
+                    updateStatus('❌ addRangeSlider method not found - CDN not updated yet', 'error');
+                    console.addLog('CDN serving old version without range sliders', 'error');
+                    return;
+                }
+                
+                // Test range slider functionality
+                console.addRangeSlider('CDN Test Slider', {
+                    min: 0,
+                    max: 100,
+                    value: 50,
+                    suffix: '%'
+                }, (value) => {
+                    console.addLog(`CDN Range slider value: ${value}%`, 'info');
+                });
+                
+                // Check if slider was created
+                const slider = console.getElement().querySelector('.range-slider');
+                if (slider) {
+                    updateStatus('✅ SUCCESS! CDN is serving updated config-console.js with range sliders', 'success');
+                    console.addLog('🎚️ Range slider functionality confirmed from CDN!', 'info');
+                    console.addLog('CDN cache has been successfully updated', 'info');
+                } else {
+                    updateStatus('❌ Range slider not created - possible CDN issue', 'error');
+                }
+                
+            } catch (error) {
+                updateStatus(`❌ Error: ${error.message}`, 'error');
+                console.error('CDN Test Error:', error);
+            }
+        }
+        
+        // Wait for scripts to load
+        window.addEventListener('load', () => {
+            setTimeout(testCDN, 1000);
+        });
+    </script>
+</body>
+</html> 
