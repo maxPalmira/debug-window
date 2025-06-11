@@ -672,9 +672,9 @@
                 const zoomResetBtn = console.window.querySelector('.zoom-reset');
                 const zoomInBtn = console.window.querySelector('.zoom-in');
                 
-                const hasZoomOutIcon = zoomOutBtn && zoomOutBtn.innerHTML.includes('🔍') && zoomOutBtn.innerHTML.includes('-');
-                const hasZoomResetIcon = zoomResetBtn && zoomResetBtn.innerHTML.includes('🔍') && zoomResetBtn.innerHTML.includes('↻');
-                const hasZoomInIcon = zoomInBtn && zoomInBtn.innerHTML.includes('🔍') && zoomInBtn.innerHTML.includes('+');
+                const hasZoomOutIcon = zoomOutBtn && zoomOutBtn.innerHTML.includes('<svg') && zoomOutBtn.innerHTML.includes('M4 6.5h4');
+                const hasZoomResetIcon = zoomResetBtn && zoomResetBtn.innerHTML.includes('<svg') && zoomResetBtn.innerHTML.includes('M8.146 4.646');
+                const hasZoomInIcon = zoomInBtn && zoomInBtn.innerHTML.includes('<svg') && zoomInBtn.innerHTML.includes('M6.5 6V4.5');
                 
                 const allIconsPresent = hasZoomOutIcon && hasZoomResetIcon && hasZoomInIcon;
                 

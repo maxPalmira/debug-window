@@ -115,7 +115,6 @@
 }
 
 .zoom-btn {
-    position: relative;
     min-width: 24px;
     font-size: 12px;
     background: rgba(255, 255, 255, 0.1);
@@ -132,26 +131,6 @@
     background: rgba(255, 255, 255, 0.2);
     color: #ffffff;
     transform: translateY(-1px);
-}
-
-.zoom-icon {
-    position: relative;
-    font-size: 14px;
-}
-
-.zoom-modifier {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    font-size: 8px;
-    font-weight: bold;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 50%;
-    width: 12px;
-    height: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 /* Zoom transform application */
@@ -742,6 +721,27 @@
             }
         }
         
+        getZoomOutIcon() {
+            return `<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                <path d="M4 6.5h4a.5.5 0 0 1 0 1H4a.5.5 0 0 1 0-1z"/>
+            </svg>`;
+        }
+        
+        getZoomResetIcon() {
+            return `<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                <path d="M8.146 4.646a.5.5 0 0 1 .708 0l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708-.708L8.793 6.5H6a.5.5 0 0 1 0-1h2.793L8.146 4.854a.5.5 0 0 1 0-.708z"/>
+            </svg>`;
+        }
+        
+        getZoomInIcon() {
+            return `<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                <path d="M6.5 6V4.5a.5.5 0 0 1 1 0V6h1.5a.5.5 0 0 1 0 1H7.5v1.5a.5.5 0 0 1-1 0V7H5a.5.5 0 0 1 0-1h1.5z"/>
+            </svg>`;
+        }
+        
         generateHTML() {
             // Create main window element
             this.window = document.createElement('div');
@@ -805,19 +805,19 @@
             // Zoom out button
             const zoomOutBtn = document.createElement('button');
             zoomOutBtn.className = 'config-btn zoom-btn zoom-out';
-            zoomOutBtn.innerHTML = '<span class="zoom-icon">🔍</span><span class="zoom-modifier">−</span>';
+            zoomOutBtn.innerHTML = this.getZoomOutIcon();
             zoomOutBtn.title = 'Zoom Out';
             
             // Zoom reset button
             const zoomResetBtn = document.createElement('button');
             zoomResetBtn.className = 'config-btn zoom-btn zoom-reset';
-            zoomResetBtn.innerHTML = '<span class="zoom-icon">🔍</span><span class="zoom-modifier">↻</span>';
+            zoomResetBtn.innerHTML = this.getZoomResetIcon();
             zoomResetBtn.title = 'Reset Zoom';
             
             // Zoom in button
             const zoomInBtn = document.createElement('button');
             zoomInBtn.className = 'config-btn zoom-btn zoom-in';
-            zoomInBtn.innerHTML = '<span class="zoom-icon">🔍</span><span class="zoom-modifier">+</span>';
+            zoomInBtn.innerHTML = this.getZoomInIcon();
             zoomInBtn.title = 'Zoom In';
             
             zoomControls.appendChild(zoomOutBtn);
