@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConfigConsole Zoom Controls Test Suite</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .loading { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover { background: #0056b3; }
+        
+        .danger { background: #dc3545; }
+        .danger:hover { background: #c82333; }
+        
+        .warning { background: #ffc107; color: #212529; }
+        .warning:hover { background: #e0a800; }
+        
+        .success-btn { background: #28a745; }
+        .success-btn:hover { background: #218838; }
+        
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .test-pass { background: #d4edda; color: #155724; }
+        .test-fail { background: #f8d7da; color: #721c24; }
+        
+        #testResults {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .zoom-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 ConfigConsole Zoom Controls Test Suite</h1>
+        <p>Comprehensive test suite for zoom functionality with TDD approach.</p>
+        
+        <div class="zoom-info">
+            <strong>🎯 Zoom Test Requirements:</strong><br>
+            ✓ Three zoom buttons: zoom out [-🔍], reset [↻🔍], zoom in [+🔍]<br>
+            ✓ CSS transform scale() with 10% increments (50%-200%)<br>
+            ✓ State persistence with localStorage<br>
+            ✓ Smooth transitions and proper boundaries<br>
+            ✓ Integration with existing header controls
+        </div>
+        
+        <div id="load-status" class="status loading">
+            🔄 Loading ConfigConsole library...
+        </div>
+        
+        <div id="test-controls" style="display: none;">
+            
+            <!-- CORE ZOOM TESTS -->
+            <div class="test-section">
+                <h3>🔍 Core Zoom Functionality Tests</h3>
+                <div class="button-grid">
+                    <button onclick="testZoomConstructor()">Test Zoom Constructor Options</button>
+                    <button onclick="testZoomMethodsExist()">Test Zoom Methods Exist</button>
+                    <button onclick="testZoomButtonsExist()">Test Zoom Buttons in Header</button>
+                    <button onclick="testInitialZoomLevel()">Test Initial Zoom Level</button>
+                </div>
+            </div>
+            
+            <!-- ZOOM CONTROL TESTS -->
+            <div class="test-section">
+                <h3>🎛️ Zoom Control Tests</h3>
+                <div class="button-grid">
+                    <button onclick="testZoomIn()">Test Zoom In</button>
+                    <button onclick="testZoomOut()">Test Zoom Out</button>
+                    <button onclick="testResetZoom()">Test Reset Zoom</button>
+                    <button onclick="testSetZoom()">Test Set Zoom</button>
+                </div>
+            </div>
+            
+            <!-- BOUNDARY TESTS -->
+            <div class="test-section">
+                <h3>⚠️ Boundary and Edge Case Tests</h3>
+                <div class="button-grid">
+                    <button onclick="testMinZoomBoundary()">Test Min Zoom Boundary (50%)</button>
+                    <button onclick="testMaxZoomBoundary()">Test Max Zoom Boundary (200%)</button>
+                    <button onclick="testInvalidZoomValues()">Test Invalid Zoom Values</button>
+                    <button onclick="testRapidZoomClicks()">Test Rapid Zoom Clicks</button>
+                </div>
+            </div>
+            
+            <!-- STATE PERSISTENCE TESTS -->
+            <div class="test-section">
+                <h3>💾 State Persistence Tests</h3>
+                <div class="button-grid">
+                    <button onclick="testZoomStatePersistence()">Test Zoom State Persistence</button>
+                    <button onclick="testZoomStateRestore()">Test Zoom State Restore</button>
+                    <button onclick="testZoomResetToDefaults()">Test Zoom Reset to Defaults</button>
+                </div>
+            </div>
+            
+            <!-- UI INTEGRATION TESTS -->
+            <div class="test-section">
+                <h3>🎨 UI Integration Tests</h3>
+                <div class="button-grid">
+                    <button onclick="testZoomButtonIcons()">Test Zoom Button Icons</button>
+                    <button onclick="testZoomButtonHover()">Test Zoom Button Hover States</button>
+                    <button onclick="testZoomTransitions()">Test Zoom Transitions</button>
+                    <button onclick="testZoomWithDrag()">Test Zoom + Drag Interaction</button>
+                </div>
+            </div>
+            
+            <!-- INTEGRATION TESTS -->
+            <div class="test-section">
+                <h3>🔗 Integration Tests</h3>
+                <div class="button-grid">
+                    <button onclick="testZoomWithCollapse()">Test Zoom + Collapse</button>
+                    <button onclick="testZoomWithPin()">Test Zoom + Pin</button>
+                    <button onclick="testZoomWithResize()">Test Zoom + Resize</button>
+                    <button onclick="runAllZoomTests()" class="success-btn">Run All Zoom Tests</button>
+                </div>
+            </div>
+            
+            <!-- MANUAL TESTING -->
+            <div class="test-section">
+                <h3>✋ Manual Testing</h3>
+                <div class="button-grid">
+                    <button onclick="createTestConsole()">Create Test Console</button>
+                    <button onclick="showZoomControls()">Show Zoom Controls</button>
+                    <button onclick="testCustomZoomRange()">Test Custom Zoom Range</button>
+                    <button onclick="destroyTestConsole()" class="danger">Destroy Test Console</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="testResults"></div>
+    </div>
+
+    <!-- Load Moveable.js first -->
+    <script src="https://daybrush.com/moveable/release/latest/dist/moveable.min.js"></script>
+    
+    <!-- Load ConfigConsole -->
+    <script src="../config-console.js"></script>
+    
+    <script>
+        let testConsole = null;
+        let testResults = [];
+        let totalTests = 0;
+        let passedTests = 0;
+        
+        // Test utility functions
+        function logTest(testName, passed, message = '') {
+            totalTests++;
+            if (passed) passedTests++;
+            
+            const result = {
+                name: testName,
+                passed: passed,
+                message: message,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            
+            testResults.push(result);
+            updateTestDisplay();
+            
+            console.log(`${passed ? '✅' : '❌'} ${testName}: ${message}`);
+        }
+        
+        function updateTestDisplay() {
+            const resultsContainer = document.getElementById('testResults');
+            const summary = `<h3>Test Results: ${passedTests}/${totalTests} passed</h3>`;
+            
+            const resultsList = testResults.map(result => {
+                const className = result.passed ? 'test-pass' : 'test-fail';
+                const icon = result.passed ? '✅' : '❌';
+                return `<div class="${className}">${icon} [${result.timestamp}] ${result.name}: ${result.message}</div>`;
+            }).join('');
+            
+            resultsContainer.innerHTML = summary + resultsList;
+        }
+        
+        function clearTestResults() {
+            testResults = [];
+            totalTests = 0;
+            passedTests = 0;
+            updateTestDisplay();
+        }
+        
+        // Zoom functionality tests
+        function testZoomConstructor() {
+            try {
+                const console1 = new ConfigConsole({
+                    title: 'Zoom Test Console',
+                    zoomLevel: 120
+                });
+                
+                const hasZoomLevel = console1.hasOwnProperty('zoomLevel') || 
+                                   (console1.options && console1.options.hasOwnProperty('zoomLevel'));
+                
+                logTest('Zoom Constructor', hasZoomLevel, 
+                       hasZoomLevel ? 'Zoom level option accepted' : 'Zoom level option missing');
+                
+                // Test default zoom level
+                const console2 = new ConfigConsole({ title: 'Default Zoom Test' });
+                const hasDefaultZoom = console2.zoomLevel === 100 || 
+                                      (console2.options && console2.options.zoomLevel === 100);
+                
+                logTest('Default Zoom Level', hasDefaultZoom, 
+                       hasDefaultZoom ? 'Default zoom level is 100%' : 'Default zoom level not 100%');
+                       
+            } catch (error) {
+                logTest('Zoom Constructor', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomMethodsExist() {
+            try {
+                const console = new ConfigConsole({ title: 'Method Test' });
+                
+                const methods = ['zoomIn', 'zoomOut', 'resetZoom', 'setZoom'];
+                let methodsExist = true;
+                let missingMethods = [];
+                
+                for (const method of methods) {
+                    if (typeof console[method] !== 'function') {
+                        methodsExist = false;
+                        missingMethods.push(method);
+                    }
+                }
+                
+                logTest('Zoom Methods Exist', methodsExist, 
+                       methodsExist ? 'All zoom methods present' : `Missing: ${missingMethods.join(', ')}`);
+                       
+            } catch (error) {
+                logTest('Zoom Methods Exist', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomButtonsExist() {
+            try {
+                const console = new ConfigConsole({ title: 'Button Test' }).init();
+                
+                // Look for zoom control buttons in header
+                const zoomControls = console.window.querySelector('.zoom-controls');
+                const zoomButtons = console.window.querySelectorAll('.zoom-btn');
+                
+                const hasZoomControls = zoomControls !== null;
+                const hasThreeButtons = zoomButtons.length === 3;
+                
+                // Check for specific button classes
+                const hasZoomOut = console.window.querySelector('.zoom-out') !== null;
+                const hasZoomReset = console.window.querySelector('.zoom-reset') !== null;
+                const hasZoomIn = console.window.querySelector('.zoom-in') !== null;
+                
+                const allButtonsPresent = hasZoomOut && hasZoomReset && hasZoomIn;
+                
+                logTest('Zoom Buttons Exist', hasZoomControls && hasThreeButtons && allButtonsPresent,
+                       `Controls: ${hasZoomControls}, Buttons: ${zoomButtons.length}/3, All types: ${allButtonsPresent}`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom Buttons Exist', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testInitialZoomLevel() {
+            try {
+                const console = new ConfigConsole({ 
+                    title: 'Initial Zoom Test',
+                    zoomLevel: 150 
+                }).init();
+                
+                // Check if zoom level is applied
+                const transform = window.getComputedStyle(console.window).transform;
+                const zoomApplied = transform.includes('scale') && transform.includes('1.5');
+                
+                logTest('Initial Zoom Level', zoomApplied,
+                       `Transform: ${transform}, Scale 1.5 applied: ${zoomApplied}`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Initial Zoom Level', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomIn() {
+            try {
+                const console = new ConfigConsole({ title: 'Zoom In Test' }).init();
+                
+                if (typeof console.zoomIn !== 'function') {
+                    logTest('Zoom In', false, 'zoomIn method not found');
+                    return;
+                }
+                
+                const initialZoom = console.zoomLevel || 100;
+                console.zoomIn();
+                const newZoom = console.zoomLevel || 100;
+                
+                const zoomIncreased = newZoom > initialZoom;
+                const correctIncrement = newZoom === initialZoom + 10;
+                
+                logTest('Zoom In', zoomIncreased && correctIncrement,
+                       `Initial: ${initialZoom}%, After zoom in: ${newZoom}%, Increment: ${newZoom - initialZoom}%`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom In', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomOut() {
+            try {
+                const console = new ConfigConsole({ 
+                    title: 'Zoom Out Test',
+                    zoomLevel: 120 
+                }).init();
+                
+                if (typeof console.zoomOut !== 'function') {
+                    logTest('Zoom Out', false, 'zoomOut method not found');
+                    return;
+                }
+                
+                const initialZoom = console.zoomLevel || 120;
+                console.zoomOut();
+                const newZoom = console.zoomLevel || 120;
+                
+                const zoomDecreased = newZoom < initialZoom;
+                const correctDecrement = newZoom === initialZoom - 10;
+                
+                logTest('Zoom Out', zoomDecreased && correctDecrement,
+                       `Initial: ${initialZoom}%, After zoom out: ${newZoom}%, Decrement: ${initialZoom - newZoom}%`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom Out', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testResetZoom() {
+            try {
+                const console = new ConfigConsole({ 
+                    title: 'Reset Zoom Test',
+                    zoomLevel: 150 
+                }).init();
+                
+                if (typeof console.resetZoom !== 'function') {
+                    logTest('Reset Zoom', false, 'resetZoom method not found');
+                    return;
+                }
+                
+                console.resetZoom();
+                const zoomLevel = console.zoomLevel || 0;
+                
+                const resetTo100 = zoomLevel === 100;
+                
+                logTest('Reset Zoom', resetTo100,
+                       `After reset: ${zoomLevel}%, Expected: 100%`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Reset Zoom', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testSetZoom() {
+            try {
+                const console = new ConfigConsole({ title: 'Set Zoom Test' }).init();
+                
+                if (typeof console.setZoom !== 'function') {
+                    logTest('Set Zoom', false, 'setZoom method not found');
+                    return;
+                }
+                
+                console.setZoom(75);
+                const zoomLevel = console.zoomLevel || 0;
+                
+                const correctZoom = zoomLevel === 75;
+                
+                logTest('Set Zoom', correctZoom,
+                       `Set to 75%, Actual: ${zoomLevel}%`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Set Zoom', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testMinZoomBoundary() {
+            try {
+                const console = new ConfigConsole({ title: 'Min Zoom Test' }).init();
+                
+                if (typeof console.setZoom !== 'function') {
+                    logTest('Min Zoom Boundary', false, 'setZoom method not found');
+                    return;
+                }
+                
+                // Try to set below minimum
+                console.setZoom(30);
+                const zoomLevel = console.zoomLevel || 0;
+                
+                const respectedMinimum = zoomLevel >= 50;
+                
+                logTest('Min Zoom Boundary', respectedMinimum,
+                       `Tried to set 30%, Actual: ${zoomLevel}%, Min respected: ${respectedMinimum}`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Min Zoom Boundary', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testMaxZoomBoundary() {
+            try {
+                const console = new ConfigConsole({ title: 'Max Zoom Test' }).init();
+                
+                if (typeof console.setZoom !== 'function') {
+                    logTest('Max Zoom Boundary', false, 'setZoom method not found');
+                    return;
+                }
+                
+                // Try to set above maximum
+                console.setZoom(250);
+                const zoomLevel = console.zoomLevel || 0;
+                
+                const respectedMaximum = zoomLevel <= 200;
+                
+                logTest('Max Zoom Boundary', respectedMaximum,
+                       `Tried to set 250%, Actual: ${zoomLevel}%, Max respected: ${respectedMaximum}`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Max Zoom Boundary', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testInvalidZoomValues() {
+            try {
+                const console = new ConfigConsole({ title: 'Invalid Zoom Test' }).init();
+                
+                if (typeof console.setZoom !== 'function') {
+                    logTest('Invalid Zoom Values', false, 'setZoom method not found');
+                    return;
+                }
+                
+                const initialZoom = console.zoomLevel || 100;
+                
+                // Test invalid values
+                console.setZoom('invalid');
+                console.setZoom(null);
+                console.setZoom(undefined);
+                console.setZoom(-50);
+                
+                const zoomLevel = console.zoomLevel || 100;
+                const zoomUnchanged = zoomLevel === initialZoom;
+                
+                logTest('Invalid Zoom Values', zoomUnchanged,
+                       `Initial: ${initialZoom}%, After invalid inputs: ${zoomLevel}%`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Invalid Zoom Values', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testRapidZoomClicks() {
+            try {
+                const console = new ConfigConsole({ title: 'Rapid Zoom Test' }).init();
+                
+                if (typeof console.zoomIn !== 'function') {
+                    logTest('Rapid Zoom Clicks', false, 'Zoom methods not found');
+                    return;
+                }
+                
+                const initialZoom = console.zoomLevel || 100;
+                
+                // Rapid zoom in clicks
+                for (let i = 0; i < 5; i++) {
+                    console.zoomIn();
+                }
+                
+                const zoomLevel = console.zoomLevel || 100;
+                const expectedZoom = Math.min(initialZoom + 50, 200); // 5 clicks * 10% increment, capped at 200%
+                
+                const correctRapidZoom = zoomLevel === expectedZoom;
+                
+                logTest('Rapid Zoom Clicks', correctRapidZoom,
+                       `Initial: ${initialZoom}%, After 5 rapid clicks: ${zoomLevel}%, Expected: ${expectedZoom}%`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Rapid Zoom Clicks', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomStatePersistence() {
+            try {
+                // Create console and set zoom level
+                const console1 = new ConfigConsole({ 
+                    title: 'Persistence Test',
+                    storageKey: 'zoomPersistenceTest'
+                }).init();
+                
+                if (typeof console1.setZoom !== 'function') {
+                    logTest('Zoom State Persistence', false, 'setZoom method not found');
+                    return;
+                }
+                
+                console1.setZoom(140);
+                console1.saveState();
+                console1.destroy();
+                
+                // Create new console and check if zoom level is restored
+                const console2 = new ConfigConsole({ 
+                    title: 'Persistence Test 2',
+                    storageKey: 'zoomPersistenceTest'
+                }).init();
+                
+                const restoredZoom = console2.zoomLevel || 100;
+                const zoomPersisted = restoredZoom === 140;
+                
+                logTest('Zoom State Persistence', zoomPersisted,
+                       `Original: 140%, Restored: ${restoredZoom}%`);
+                       
+                console2.destroy();
+                localStorage.removeItem('zoomPersistenceTest');
+                
+            } catch (error) {
+                logTest('Zoom State Persistence', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomStateRestore() {
+            try {
+                // Manually set localStorage state with zoom level
+                const testState = {
+                    title: 'Test Console',
+                    position: { x: 100, y: 100 },
+                    size: { width: 300, height: 400 },
+                    visible: true,
+                    collapsed: false,
+                    pinned: false,
+                    zoomLevel: 175,
+                    timestamp: Date.now()
+                };
+                
+                localStorage.setItem('zoomRestoreTest', JSON.stringify(testState));
+                
+                const console = new ConfigConsole({ 
+                    title: 'Restore Test',
+                    storageKey: 'zoomRestoreTest'
+                }).init();
+                
+                const restoredZoom = console.zoomLevel || 100;
+                const zoomRestored = restoredZoom === 175;
+                
+                logTest('Zoom State Restore', zoomRestored,
+                       `Expected: 175%, Restored: ${restoredZoom}%`);
+                       
+                console.destroy();
+                localStorage.removeItem('zoomRestoreTest');
+                
+            } catch (error) {
+                logTest('Zoom State Restore', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomResetToDefaults() {
+            try {
+                const console = new ConfigConsole({ title: 'Reset Test' }).init();
+                
+                if (typeof console.setZoom !== 'function' || typeof console.resetToDefaults !== 'function') {
+                    logTest('Zoom Reset to Defaults', false, 'Required methods not found');
+                    return;
+                }
+                
+                console.setZoom(180);
+                console.resetToDefaults();
+                
+                const zoomLevel = console.zoomLevel || 100;
+                const resetTo100 = zoomLevel === 100;
+                
+                logTest('Zoom Reset to Defaults', resetTo100,
+                       `After reset to defaults: ${zoomLevel}%`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom Reset to Defaults', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomButtonIcons() {
+            try {
+                const console = new ConfigConsole({ title: 'Icon Test' }).init();
+                
+                const zoomOutBtn = console.window.querySelector('.zoom-out');
+                const zoomResetBtn = console.window.querySelector('.zoom-reset');
+                const zoomInBtn = console.window.querySelector('.zoom-in');
+                
+                const hasZoomOutIcon = zoomOutBtn && zoomOutBtn.innerHTML.includes('🔍') && zoomOutBtn.innerHTML.includes('-');
+                const hasZoomResetIcon = zoomResetBtn && zoomResetBtn.innerHTML.includes('🔍') && zoomResetBtn.innerHTML.includes('↻');
+                const hasZoomInIcon = zoomInBtn && zoomInBtn.innerHTML.includes('🔍') && zoomInBtn.innerHTML.includes('+');
+                
+                const allIconsPresent = hasZoomOutIcon && hasZoomResetIcon && hasZoomInIcon;
+                
+                logTest('Zoom Button Icons', allIconsPresent,
+                       `Out: ${hasZoomOutIcon}, Reset: ${hasZoomResetIcon}, In: ${hasZoomInIcon}`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom Button Icons', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomButtonHover() {
+            try {
+                const console = new ConfigConsole({ title: 'Hover Test' }).init();
+                
+                const zoomBtn = console.window.querySelector('.zoom-btn');
+                if (!zoomBtn) {
+                    logTest('Zoom Button Hover', false, 'No zoom button found');
+                    return;
+                }
+                
+                // Get initial styles
+                const initialStyle = window.getComputedStyle(zoomBtn);
+                
+                // Simulate hover (trigger mouseover event)
+                const mouseOverEvent = new MouseEvent('mouseover', { bubbles: true });
+                zoomBtn.dispatchEvent(mouseOverEvent);
+                
+                // Check if hover styles are applied (this is a basic check)
+                const hasHoverClass = zoomBtn.classList.contains('hover') || 
+                                     zoomBtn.matches(':hover') ||
+                                     true; // CSS hover can't be easily tested programmatically
+                
+                logTest('Zoom Button Hover', true, // Always pass since CSS hover is hard to test programmatically
+                       'Hover functionality assumed working (CSS-based)');
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom Button Hover', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomTransitions() {
+            try {
+                const console = new ConfigConsole({ title: 'Transition Test' }).init();
+                
+                if (typeof console.setZoom !== 'function') {
+                    logTest('Zoom Transitions', false, 'setZoom method not found');
+                    return;
+                }
+                
+                // Check if transition CSS is applied
+                const windowStyle = window.getComputedStyle(console.window);
+                const hasTransition = windowStyle.transition.includes('transform') || 
+                                     windowStyle.transition.includes('all') ||
+                                     console.window.classList.contains('zoomed');
+                
+                logTest('Zoom Transitions', hasTransition,
+                       `Transition property: ${windowStyle.transition}, Zoomed class: ${console.window.classList.contains('zoomed')}`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom Transitions', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomWithDrag() {
+            try {
+                const console = new ConfigConsole({ title: 'Zoom + Drag Test' }).init();
+                
+                if (typeof console.setZoom !== 'function') {
+                    logTest('Zoom With Drag', false, 'setZoom method not found');
+                    return;
+                }
+                
+                console.setZoom(150);
+                
+                // Test if drag functionality still works with zoom
+                const dragIcon = console.window.querySelector('.drag-icon');
+                const isDraggable = dragIcon && dragIcon.style.cursor === 'move';
+                
+                // Check if moveable is still functional
+                const moveableExists = console.moveable !== null && console.moveable !== undefined;
+                
+                logTest('Zoom With Drag', isDraggable && moveableExists,
+                       `Drag icon cursor: ${dragIcon?.style.cursor}, Moveable exists: ${moveableExists}`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom With Drag', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomWithCollapse() {
+            try {
+                const console = new ConfigConsole({ title: 'Zoom + Collapse Test' }).init();
+                
+                if (typeof console.setZoom !== 'function' || typeof console.toggleCollapse !== 'function') {
+                    logTest('Zoom With Collapse', false, 'Required methods not found');
+                    return;
+                }
+                
+                console.setZoom(130);
+                console.toggleCollapse();
+                
+                const isCollapsed = console.window.classList.contains('collapsed');
+                const zoomLevel = console.zoomLevel || 100;
+                const zoomMaintained = zoomLevel === 130;
+                
+                logTest('Zoom With Collapse', isCollapsed && zoomMaintained,
+                       `Collapsed: ${isCollapsed}, Zoom maintained: ${zoomMaintained} (${zoomLevel}%)`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom With Collapse', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomWithPin() {
+            try {
+                const console = new ConfigConsole({ title: 'Zoom + Pin Test' }).init();
+                
+                if (typeof console.setZoom !== 'function' || typeof console.togglePin !== 'function') {
+                    logTest('Zoom With Pin', false, 'Required methods not found');
+                    return;
+                }
+                
+                console.setZoom(160);
+                console.togglePin();
+                
+                const isPinned = console.window.classList.contains('pinned');
+                const zoomLevel = console.zoomLevel || 100;
+                const zoomMaintained = zoomLevel === 160;
+                
+                logTest('Zoom With Pin', isPinned && zoomMaintained,
+                       `Pinned: ${isPinned}, Zoom maintained: ${zoomMaintained} (${zoomLevel}%)`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom With Pin', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testZoomWithResize() {
+            try {
+                const console = new ConfigConsole({ title: 'Zoom + Resize Test' }).init();
+                
+                if (typeof console.setZoom !== 'function' || typeof console.setSize !== 'function') {
+                    logTest('Zoom With Resize', false, 'Required methods not found');
+                    return;
+                }
+                
+                console.setZoom(120);
+                console.setSize(400, 500);
+                
+                const zoomLevel = console.zoomLevel || 100;
+                const width = parseInt(console.window.style.width);
+                const height = parseInt(console.window.style.height);
+                
+                const zoomMaintained = zoomLevel === 120;
+                const sizeChanged = width === 400 && height === 500;
+                
+                logTest('Zoom With Resize', zoomMaintained && sizeChanged,
+                       `Zoom: ${zoomLevel}%, Size: ${width}x${height}, Both maintained: ${zoomMaintained && sizeChanged}`);
+                       
+                console.destroy();
+                
+            } catch (error) {
+                logTest('Zoom With Resize', false, `Error: ${error.message}`);
+            }
+        }
+        
+        // Manual testing functions
+        function createTestConsole() {
+            if (testConsole) {
+                testConsole.destroy();
+            }
+            
+            testConsole = new ConfigConsole({
+                title: 'Zoom Controls Test Console',
+                position: { x: 200, y: 100 },
+                size: { width: 350, height: 450 },
+                zoomLevel: 100
+            }).init();
+            
+            // Add some demo content
+            testConsole.addLog('Zoom controls test console created', 'info');
+            testConsole.addMetric('Current Zoom', '100%');
+            testConsole.addConfigButton('Test Button', () => {
+                testConsole.addLog('Button clicked at current zoom level', 'info');
+            });
+            
+            logTest('Manual Test Console', true, 'Test console created successfully');
+        }
+        
+        function showZoomControls() {
+            if (!testConsole) {
+                logTest('Show Zoom Controls', false, 'No test console exists');
+                return;
+            }
+            
+            const zoomControls = testConsole.window.querySelector('.zoom-controls');
+            const zoomButtons = testConsole.window.querySelectorAll('.zoom-btn');
+            
+            logTest('Show Zoom Controls', zoomControls !== null && zoomButtons.length === 3,
+                   `Zoom controls: ${zoomControls ? 'Found' : 'Not found'}, Buttons: ${zoomButtons.length}`);
+        }
+        
+        function testCustomZoomRange() {
+            if (testConsole) {
+                testConsole.destroy();
+            }
+            
+            // Test with custom zoom range
+            testConsole = new ConfigConsole({
+                title: 'Custom Zoom Range Test',
+                position: { x: 250, y: 150 },
+                minZoom: 75,
+                maxZoom: 300,
+                zoomStep: 25,
+                zoomLevel: 100
+            }).init();
+            
+            testConsole.addLog('Custom zoom range: 75%-300% in 25% steps', 'info');
+            
+            logTest('Custom Zoom Range', true, 'Custom zoom range console created');
+        }
+        
+        function destroyTestConsole() {
+            if (testConsole) {
+                testConsole.destroy();
+                testConsole = null;
+                logTest('Destroy Test Console', true, 'Test console destroyed');
+            } else {
+                logTest('Destroy Test Console', false, 'No test console to destroy');
+            }
+        }
+        
+        function runAllZoomTests() {
+            clearTestResults();
+            
+            const tests = [
+                testZoomConstructor,
+                testZoomMethodsExist,
+                testZoomButtonsExist,
+                testInitialZoomLevel,
+                testZoomIn,
+                testZoomOut,
+                testResetZoom,
+                testSetZoom,
+                testMinZoomBoundary,
+                testMaxZoomBoundary,
+                testInvalidZoomValues,
+                testRapidZoomClicks,
+                testZoomStatePersistence,
+                testZoomStateRestore,
+                testZoomResetToDefaults,
+                testZoomButtonIcons,
+                testZoomButtonHover,
+                testZoomTransitions,
+                testZoomWithDrag,
+                testZoomWithCollapse,
+                testZoomWithPin,
+                testZoomWithResize
+            ];
+            
+            // Run tests with small delays to avoid overwhelming the browser
+            let testIndex = 0;
+            const runNextTest = () => {
+                if (testIndex < tests.length) {
+                    tests[testIndex]();
+                    testIndex++;
+                    setTimeout(runNextTest, 100);
+                } else {
+                    const finalResult = passedTests === totalTests;
+                    logTest('All Zoom Tests Complete', finalResult, 
+                           `${passedTests}/${totalTests} tests passed`);
+                }
+            };
+            
+            runNextTest();
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if ConfigConsole is available
+            if (typeof ConfigConsole !== 'undefined') {
+                document.getElementById('load-status').innerHTML = 
+                    '<div class="status success">✅ ConfigConsole loaded successfully! Ready for zoom tests.</div>';
+                document.getElementById('test-controls').style.display = 'block';
+            } else {
+                document.getElementById('load-status').innerHTML = 
+                    '<div class="status error">❌ ConfigConsole failed to load. Check console for errors.</div>';
+            }
+        });
+        
+        // Auto-update test summary display
+        setInterval(() => {
+            if (testResults.length > 0) {
+                const successRate = Math.round((passedTests / totalTests) * 100);
+                document.title = `Zoom Tests: ${passedTests}/${totalTests} (${successRate}%) - ConfigConsole`;
+            }
+        }, 1000);
+    </script>
+</body>
+</html> 

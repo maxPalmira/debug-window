@@ -107,6 +107,59 @@
     z-index: 10000;
 }
 
+/* Zoom Controls */
+.zoom-controls {
+    display: flex;
+    gap: 2px;
+    margin-right: 4px;
+}
+
+.zoom-btn {
+    position: relative;
+    min-width: 24px;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #cccccc;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 3px;
+    transition: all 0.2s;
+    font-weight: bold;
+}
+
+.zoom-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.zoom-icon {
+    position: relative;
+    font-size: 14px;
+}
+
+.zoom-modifier {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    font-size: 8px;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Zoom transform application */
+.config-console.zoomed {
+    transform-origin: top left;
+    transition: transform 0.2s ease-out;
+}
+
 .config-content {
     flex: 1;
     padding: 8px;
@@ -646,7 +699,11 @@
                 visible: options.visible !== false,
                 collapsed: options.collapsed || false,
                 pinned: options.pinned || false,
-                storageKey: options.storageKey || 'configConsole'
+                storageKey: options.storageKey || 'configConsole',
+                zoomLevel: options.zoomLevel || 100,
+                minZoom: options.minZoom || 50,
+                maxZoom: options.maxZoom || 200,
+                zoomStep: options.zoomStep || 10
             };
             
             this.defaultOptions = { ...this.options };
@@ -655,6 +712,10 @@
             this.isVisible = this.options.visible;
             this.isCollapsed = this.options.collapsed;
             this.isPinned = this.options.pinned;
+            this.zoomLevel = this.options.zoomLevel;
+            this.minZoom = this.options.minZoom;
+            this.maxZoom = this.options.maxZoom;
+            this.zoomStep = this.options.zoomStep;
             this.sections = new Map();
             this.groups = new Map();
             this.logCount = 0;
@@ -703,6 +764,12 @@
                 this.window.classList.add('pinned');
             }
             
+            // Apply initial zoom if not default
+            if (this.zoomLevel !== 100) {
+                this.window.style.transform = `scale(${this.zoomLevel / 100})`;
+                this.window.classList.add('zoomed');
+            }
+            
             // Create header
             const header = document.createElement('div');
             header.className = 'config-header';
@@ -731,6 +798,32 @@
             pinBtn.innerHTML = this.getPinIcon();
             pinBtn.title = 'Pin/Unpin window';
             
+            // Zoom controls group
+            const zoomControls = document.createElement('div');
+            zoomControls.className = 'zoom-controls';
+            
+            // Zoom out button
+            const zoomOutBtn = document.createElement('button');
+            zoomOutBtn.className = 'config-btn zoom-btn zoom-out';
+            zoomOutBtn.innerHTML = '<span class="zoom-icon">🔍</span><span class="zoom-modifier">−</span>';
+            zoomOutBtn.title = 'Zoom Out';
+            
+            // Zoom reset button
+            const zoomResetBtn = document.createElement('button');
+            zoomResetBtn.className = 'config-btn zoom-btn zoom-reset';
+            zoomResetBtn.innerHTML = '<span class="zoom-icon">🔍</span><span class="zoom-modifier">↻</span>';
+            zoomResetBtn.title = 'Reset Zoom';
+            
+            // Zoom in button
+            const zoomInBtn = document.createElement('button');
+            zoomInBtn.className = 'config-btn zoom-btn zoom-in';
+            zoomInBtn.innerHTML = '<span class="zoom-icon">🔍</span><span class="zoom-modifier">+</span>';
+            zoomInBtn.title = 'Zoom In';
+            
+            zoomControls.appendChild(zoomOutBtn);
+            zoomControls.appendChild(zoomResetBtn);
+            zoomControls.appendChild(zoomInBtn);
+            
             // Minimize/collapse button
             const minimizeBtn = document.createElement('button');
             minimizeBtn.className = 'config-btn minimize-btn';
@@ -744,6 +837,7 @@
             closeBtn.title = 'Close';
             
             controls.appendChild(pinBtn);
+            controls.appendChild(zoomControls);
             controls.appendChild(minimizeBtn);
             controls.appendChild(closeBtn);
             
@@ -822,6 +916,25 @@
                     e.preventDefault();
                     e.stopPropagation();
                     this.hide();
+                }
+                
+                // Handle zoom buttons
+                if (e.target.classList.contains('zoom-out') || e.target.closest('.zoom-out')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.zoomOut();
+                }
+                
+                if (e.target.classList.contains('zoom-reset') || e.target.closest('.zoom-reset')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.resetZoom();
+                }
+                
+                if (e.target.classList.contains('zoom-in') || e.target.closest('.zoom-in')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.zoomIn();
                 }
                 
                 // Handle group header clicks
@@ -911,6 +1024,7 @@
                 visible: this.isVisible,
                 collapsed: this.isCollapsed,
                 pinned: this.isPinned,
+                zoomLevel: this.zoomLevel,
                 timestamp: Date.now()
             };
             
@@ -975,6 +1089,10 @@
                         this.pinBtn.innerHTML = this.getPinIcon();
                     }
                 }
+                
+                if (typeof state.zoomLevel === 'number') {
+                    this.setZoom(state.zoomLevel);
+                }
             } catch (error) {
                 console.warn('Failed to load debug window state:', error);
             }
@@ -1017,6 +1135,10 @@
                 this.pinBtn.innerHTML = this.getPinIcon();
             }
             
+            // Reset zoom level
+            this.zoomLevel = this.defaultOptions.zoomLevel;
+            this.setZoom(this.zoomLevel);
+            
             this.clearState();
             
             return this;
@@ -1036,6 +1158,7 @@
                 visible: this.isVisible,
                 collapsed: this.isCollapsed,
                 pinned: this.isPinned,
+                zoomLevel: this.zoomLevel,
                 sections: Array.from(this.sections.keys()),
                 logCount: this.logCount
             };
@@ -1132,6 +1255,48 @@
             }
             
             // Auto-save pin state
+            this.saveState();
+            
+            return this;
+        }
+        
+        // Zoom control methods
+        zoomIn() {
+            if (this.zoomLevel < this.maxZoom) {
+                this.setZoom(this.zoomLevel + this.zoomStep);
+            }
+            return this;
+        }
+        
+        zoomOut() {
+            if (this.zoomLevel > this.minZoom) {
+                this.setZoom(this.zoomLevel - this.zoomStep);
+            }
+            return this;
+        }
+        
+        resetZoom() {
+            this.setZoom(100);
+            return this;
+        }
+        
+        setZoom(level) {
+            // Validate input
+            if (typeof level !== 'number' || isNaN(level) || level <= 0) {
+                return this;
+            }
+            
+            // Clamp to min/max bounds
+            this.zoomLevel = Math.max(this.minZoom, Math.min(this.maxZoom, level));
+            
+            // Apply CSS transform
+            this.window.style.transform = `scale(${this.zoomLevel / 100})`;
+            this.window.classList.add('zoomed');
+            
+            // Log zoom change
+            this.addLog(`Zoom level: ${this.zoomLevel}%`, 'info');
+            
+            // Save state
             this.saveState();
             
             return this;
